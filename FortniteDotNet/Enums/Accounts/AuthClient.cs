@@ -1,6 +1,4 @@
-﻿using Newtonsoft.Json;
-
-namespace FortniteDotNet.Enums.Accounts
+﻿namespace FortniteDotNet.Enums.Accounts
 {
     public enum AuthClient
     {

@@ -3,7 +3,6 @@ using Newtonsoft.Json;
 using System.Threading.Tasks;
 using FortniteDotNet.Services;
 using System.Collections.Generic;
-using System.Threading.Channels;
 using FortniteDotNet.Enums.Channels;
 using FortniteDotNet.Enums.Events;
 using FortniteDotNet.Models.Channels;
@@ -127,6 +126,10 @@ namespace FortniteDotNet.Models.Accounts
         /// <inheritdoc cref="EventsService.GetEventData"/>
         public async Task<EventData> GetEventDataAsync(Region region, Platform platform)
             => await EventsService.GetEventData(this, region, platform);
+        
+        /// <inheritdoc cref="EventsService.GetEventData"/>
+        public async Task<Leaderboard> GetLeaderboardDataAsync(string eventId, string eventWindowId)
+            => await EventsService.GetLeaderboardData(this, eventId, eventWindowId);
         
         public async ValueTask DisposeAsync()
         {

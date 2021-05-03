@@ -14,9 +14,6 @@ namespace FortniteDotNet.Services
 {
     public class ChannelsService
     {
-        // The base endpoint for Epic Games' production channels service.
-        private const string BASE_URL = "https://channels-public-service-prod.ol.epicgames.com";
-
         /// <summary>
         /// Gets a user setting with the provided setting key of the account bound to the provided <see cref="OAuthSession"/>.
         /// </summary>
@@ -39,7 +36,7 @@ namespace FortniteDotNet.Services
             };
             
             // Use our request helper to make a GET request, and return the response data deserialized into the appropriate type.
-            return await client.GetDataAsync<UserSetting>($"{BASE_URL}/api/v1/user/{oAuthSession.AccountId}/setting/{setting}").ConfigureAwait(false);
+            return await client.GetDataAsync<UserSetting>(Endpoints.Channels.Setting(oAuthSession.AccountId, setting)).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -66,7 +63,7 @@ namespace FortniteDotNet.Services
             };
             
             // Use our request helper to make a GET request, and return the response data deserialized into the appropriate type.
-            await client.PutDataAsync<UserSetting>($"{BASE_URL}/api/v1/user/{oAuthSession.AccountId}/setting/{setting}",
+            await client.PutDataAsync<UserSetting>(Endpoints.Channels.Setting(oAuthSession.AccountId, setting),
                 JsonConvert.SerializeObject(payload)).ConfigureAwait(false);
         }
 
@@ -92,7 +89,7 @@ namespace FortniteDotNet.Services
             };
             
             // Use our request helper to make a GET request, and return the response data deserialized into the appropriate type.
-            return await client.GetDataAsync<List<string>>($"{BASE_URL}/api/v1/user/{oAuthSession.AccountId}/setting/{setting}/available").ConfigureAwait(false);
+            return await client.GetDataAsync<List<string>>(Endpoints.Channels.Available(oAuthSession.AccountId, setting)).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -107,13 +104,6 @@ namespace FortniteDotNet.Services
             // Get the value of our enum. We're using enums for data validation purposes and to prevent erroneous responses.
             var setting = settingKey.GetAttribute<ValueAttribute>().Value;
             
-            // Sets up the encoded form data for when we make the request.
-            var query = HttpUtility.ParseQueryString(string.Empty);
-            
-            // Add the provided account ID's to the query.
-            foreach (var id in ids)
-                query.Add("accountId", id);
-            
             // We're using a using statement so that the initialised client is disposed of when the code block is exited.
             using var client = new WebClient
             {
@@ -125,7 +115,7 @@ namespace FortniteDotNet.Services
             };
             
             // Use our request helper to make a GET request, and return the response data deserialized into the appropriate type.
-            return await client.GetDataAsync<List<UserSetting>>($"{BASE_URL}/api/v1/user/setting/{setting}?{query}").ConfigureAwait(false);
+            return await client.GetDataAsync<List<UserSetting>>(Endpoints.Channels.Setting(ids, setting)).ConfigureAwait(false);
         }
     }
 }

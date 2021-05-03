@@ -1,4 +1,5 @@
-﻿using FortniteDotNet.Services;
+﻿using System.Dynamic;
+using FortniteDotNet.Services;
 
 namespace FortniteDotNet
 {
@@ -7,12 +8,15 @@ namespace FortniteDotNet
         public AccountService AccountService { get; }
         public ChannelsService ChannelsService { get; }
         public EventsService EventsService { get; }
-
+        public FortniteService FortniteService { get; }
+        
+        
         public FortniteApi()
         {
             AccountService = new();
             ChannelsService = new();
             EventsService = new();
+            FortniteService = new();
         }
     }
 }

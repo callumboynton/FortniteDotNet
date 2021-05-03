@@ -13,9 +13,6 @@ namespace FortniteDotNet.Services
 {
     public class AccountService
     {
-        // The base endpoint for Epic Games' production account service.
-        private const string BASE_URL = "https://account-public-service-prod.ol.epicgames.com/account";
-
         /// <summary>
         /// Generates an OAuth session based on the provided parameters.
         /// </summary>
@@ -65,7 +62,7 @@ namespace FortniteDotNet.Services
             };
             
             // Use our request helper to make a POST request, and return the response data deserialized into the appropriate type.
-            return await client.PostDataAsync<OAuthSession>($"{BASE_URL}/api/oauth/token", query.ToString()).ConfigureAwait(false);
+            return await client.PostDataAsync<OAuthSession>(Endpoints.Accounts.OAuth.Token, query.ToString()).ConfigureAwait(false);
         }
         
         /// <summary>
@@ -85,7 +82,7 @@ namespace FortniteDotNet.Services
             };
             
             // Use our request helper to make a DELETE request. We don't return anything here, because this request returns 204 No Content, so there's nothing to return.
-            await client.DeleteDataAsync($"{BASE_URL}/api/oauth/sessions/kill/{oAuthSession.AccessToken}").ConfigureAwait(false);
+            await client.DeleteDataAsync(Endpoints.Accounts.OAuth.KillSession(oAuthSession.AccessToken)).ConfigureAwait(false);
         }
         
         /// <summary>
@@ -106,7 +103,7 @@ namespace FortniteDotNet.Services
             };
             
             // Use our request helper to make a GET request, and return the response data deserialized into the appropriate type.
-            return await client.GetDataAsync<ExchangeCode>($"{BASE_URL}/api/oauth/exchange").ConfigureAwait(false);
+            return await client.GetDataAsync<ExchangeCode>(Endpoints.Accounts.OAuth.Exchange).ConfigureAwait(false);
         }
         
         /// <summary>
@@ -127,7 +124,7 @@ namespace FortniteDotNet.Services
             };
             
             // Use our request helper to make a GET request, and return the response data deserialized into the appropriate type.
-            return await client.GetDataAsync<AccountInfo>($"{BASE_URL}/api/public/account/{oAuthSession.AccountId}").ConfigureAwait(false);
+            return await client.GetDataAsync<AccountInfo>(Endpoints.Accounts.Account(oAuthSession.AccountId)).ConfigureAwait(false);
         }
         
         /// <summary>
@@ -138,13 +135,6 @@ namespace FortniteDotNet.Services
         /// <returns>A list of <see cref="AccountInfo"/> bound to the provided account IDs.</returns>
         public async Task<List<AccountInfo>> GetInformation(OAuthSession oAuthSession, params string[] ids)
         {
-            // Sets up the encoded form data for when we make the request.
-            var query = HttpUtility.ParseQueryString(string.Empty);
-            
-            // Add the provided account ID's to the query.
-            foreach (var id in ids)
-                query.Add("accountId", id);
-            
             // We're using a using statement so that the initialised client is disposed of when the code block is exited.
             using var client = new WebClient
             {
@@ -156,7 +146,7 @@ namespace FortniteDotNet.Services
             };
             
             // Use our request helper to make a GET request, and return the response data deserialized into the appropriate type.
-            return await client.GetDataAsync<List<AccountInfo>>($"{BASE_URL}/api/public/account?{query}").ConfigureAwait(false);
+            return await client.GetDataAsync<List<AccountInfo>>(Endpoints.Accounts.Account(ids)).ConfigureAwait(false);
         }
         
         /// <summary>
@@ -177,7 +167,7 @@ namespace FortniteDotNet.Services
             };
             
             // Use our request helper to make a GET request, and return the response data deserialized into the appropriate type.
-            return await client.GetDataAsync<object>($"{BASE_URL}/api/accounts/{oAuthSession.AccountId}/metadata").ConfigureAwait(false);
+            return await client.GetDataAsync<object>(Endpoints.Accounts.Metadata(oAuthSession.AccountId)).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -198,7 +188,7 @@ namespace FortniteDotNet.Services
             };
             
             // Use our request helper to make a GET request, and return the response data deserialized into the appropriate type.
-            return await client.GetDataAsync<List<DeviceAuth>>($"{BASE_URL}/api/public/account/{oAuthSession.AccountId}/deviceAuth").ConfigureAwait(false);
+            return await client.GetDataAsync<List<DeviceAuth>>(Endpoints.Accounts.DeviceAuths(oAuthSession.AccountId)).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -220,7 +210,7 @@ namespace FortniteDotNet.Services
             };
             
             // Use our request helper to make a GET request, and return the response data deserialized into the appropriate type.
-            return await client.GetDataAsync<DeviceAuth>($"{BASE_URL}/api/public/account/{oAuthSession.AccountId}/deviceAuth/{deviceId}").ConfigureAwait(false);
+            return await client.GetDataAsync<DeviceAuth>(Endpoints.Accounts.DeviceAuth(oAuthSession.AccountId, deviceId)).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -241,7 +231,7 @@ namespace FortniteDotNet.Services
             };
             
             // Use our request helper to make a POST request, and return the response data deserialized into the appropriate type.
-            return await client.PostDataAsync<DeviceAuth>($"{BASE_URL}/api/public/account/{oAuthSession.AccountId}/deviceAuth", "").ConfigureAwait(false);
+            return await client.PostDataAsync<DeviceAuth>(Endpoints.Accounts.DeviceAuths(oAuthSession.AccountId), "").ConfigureAwait(false);
         }
         
         /// <summary>
@@ -262,7 +252,7 @@ namespace FortniteDotNet.Services
             };
             
             // Use our request helper to make a DELETE request. We don't return anything here, because this request returns 204 No Content, so there's nothing to return.
-            await client.DeleteDataAsync($"{BASE_URL}/api/public/account/{oAuthSession.AccountId}/deviceAuth/{deviceId}").ConfigureAwait(false);
+            await client.DeleteDataAsync(Endpoints.Accounts.DeviceAuth(oAuthSession.AccountId, deviceId)).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -283,7 +273,7 @@ namespace FortniteDotNet.Services
             };
             
             // Use our request helper to make a GET request, and return the response data deserialized into the appropriate type.
-            return await client.GetDataAsync<List<ExternalAuth>>($"{BASE_URL}/api/public/account/{oAuthSession.AccountId}/externalAuths").ConfigureAwait(false);
+            return await client.GetDataAsync<List<ExternalAuth>>(Endpoints.Accounts.ExternalAuths(oAuthSession.AccountId)).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -305,7 +295,7 @@ namespace FortniteDotNet.Services
             };
             
             // Use our request helper to make a GET request, and return the response data deserialized into the appropriate type.
-            return await client.GetDataAsync<ExternalAuth>($"{BASE_URL}/api/public/account/{oAuthSession.AccountId}/externalAuths/{type}").ConfigureAwait(false);
+            return await client.GetDataAsync<ExternalAuth>(Endpoints.Accounts.ExternalAuth(oAuthSession.AccountId, type)).ConfigureAwait(false);
         }
 
         /*
@@ -353,7 +343,7 @@ namespace FortniteDotNet.Services
             };
             
             // Use our request helper to make a DELETE request. We don't return anything here, because this request returns 204 No Content, so there's nothing to return.
-            await client.DeleteDataAsync($"{BASE_URL}/api/public/account/{oAuthSession.AccountId}/externalAuths/{type}").ConfigureAwait(false);
+            await client.DeleteDataAsync(Endpoints.Accounts.ExternalAuth(oAuthSession.AccountId, type)).ConfigureAwait(false);
         }
         
         /// <summary>
@@ -375,7 +365,7 @@ namespace FortniteDotNet.Services
             };
             
             // Use our request helper to make a GET request, and return the response data deserialized into the appropriate type.
-            return await client.GetDataAsync<AccountInfo>($"{BASE_URL}/api/public/account/displayName/{displayName}").ConfigureAwait(false);
+            return await client.GetDataAsync<AccountInfo>(Endpoints.Accounts.DisplayNameLookup(displayName)).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -397,7 +387,7 @@ namespace FortniteDotNet.Services
             };
             
             // Use our request helper to make a GET request, and return the response data deserialized into the appropriate type.
-            return await client.GetDataAsync<AccountInfo>($"{BASE_URL}/api/public/account/email/{email}").ConfigureAwait(false);
+            return await client.GetDataAsync<AccountInfo>(Endpoints.Accounts.EmailLookup(email)).ConfigureAwait(false);
         }
 
         /// <summary>

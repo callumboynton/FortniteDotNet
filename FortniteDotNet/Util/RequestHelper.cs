@@ -18,6 +18,9 @@ namespace FortniteDotNet.Util
             }
             catch (WebException ex)
             {
+                if (ex.Response == null)
+                    return default;
+                    
                 using var reader = new StreamReader(ex.Response.GetResponseStream());
                 var body = await reader.ReadToEndAsync().ConfigureAwait(false);
                 var exception = JsonConvert.DeserializeObject<EpicException>(body);
@@ -34,6 +37,9 @@ namespace FortniteDotNet.Util
             }
             catch (WebException ex)
             {
+                if (ex.Response == null)
+                    return default;
+                
                 using var reader = new StreamReader(ex.Response.GetResponseStream());
                 var body = await reader.ReadToEndAsync().ConfigureAwait(false);
                 var exception = JsonConvert.DeserializeObject<EpicException>(body);

@@ -1,6 +1,7 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using FortniteDotNet.Enums.Accounts;
-using FortniteDotNet.Enums.Events;
+using FortniteDotNet.Enums.Fortnite;
 
 namespace FortniteDotNet.Test
 {
@@ -15,12 +16,10 @@ namespace FortniteDotNet.Test
                 await using var authSession = await api.AccountService.GenerateOAuthSession(
                     GrantType.DeviceAuth, AuthClient.iOS, new()
                     {
-                        { "device_id", "03fabe92f86844a6971ea7ff55cc01a6" },
-                        { "account_id", "8d89cb32d31147f28e0872116945c376" },
-                        { "secret", "KICCZ3GETFF7VGMDJPQRVVBJKVHD4LOM" }
+                        { "device_id", "" },
+                        { "account_id", "" },
+                        { "secret", "" }
                     });
-
-                await authSession.GetEventDataAsync(Region.EU, Platform.Windows);
 
             }).ConfigureAwait(false).GetAwaiter().GetResult();
         }
