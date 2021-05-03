@@ -1,10 +1,12 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using Newtonsoft.Json;
 using FortniteDotNet.Util;
 using System.Threading.Tasks;
 using FortniteDotNet.Attributes;
 using FortniteDotNet.Enums.Fortnite;
 using FortniteDotNet.Models.Accounts;
+using FortniteDotNet.Models.Fortnite;
 using FortniteDotNet.Payloads.Fortnite;
 using FortniteDotNet.Models.Fortnite.Mcp;
 
@@ -17,8 +19,9 @@ namespace FortniteDotNet.Services
         /// </summary>
         /// <param name="oAuthSession">The <see cref="OAuthSession"/> to use for authentication.</param>
         /// <param name="profile">The profile to retrieve the profile data of.</param>
-        /// <returns>The <see cref="McpResponse"/> of the specified profile.</returns>
-        public async Task<McpResponse> QueryProfile(OAuthSession oAuthSession, Profile profile)
+        /// <param name="revision">The operation revision. This parameter is optional.</param>
+        /// <returns>The <see cref="McpResponse"/> of the executed command.</returns>
+        internal static async Task<McpResponse> QueryProfile(OAuthSession oAuthSession, Profile profile, int revision = -1)
         {
             var profileId = profile.GetAttribute<ValueAttribute>().Value;
             
@@ -35,7 +38,7 @@ namespace FortniteDotNet.Services
             };
             
             // Use our request helper to make a POST request, and return the response data deserialized into the appropriate type.
-            return await client.PostDataAsync<McpResponse>(Endpoints.Fortnite.Mcp.QueryProfile(oAuthSession.AccountId, profileId), "{}").ConfigureAwait(false);
+            return await client.PostDataAsync<McpResponse>(Endpoints.Fortnite.Mcp.QueryProfile(oAuthSession.AccountId, profileId, revision), "{}").ConfigureAwait(false);
         }
 
         /// <summary>
@@ -43,8 +46,9 @@ namespace FortniteDotNet.Services
         /// </summary>
         /// <param name="oAuthSession">The <see cref="OAuthSession"/> to use for authentication.</param>
         /// <param name="profile">The profile to retrieve the profile data of.</param>
-        /// <returns></returns>
-        internal static async Task<McpResponse> ClientQuestLogin(OAuthSession oAuthSession, Profile profile)
+        /// <param name="revision">The operation revision. This parameter is optional.</param>
+        /// <returns>The <see cref="McpResponse"/> of the executed command.</returns>
+        internal static async Task<McpResponse> ClientQuestLogin(OAuthSession oAuthSession, Profile profile, int revision = -1)
         {
             var profileId = profile.GetAttribute<ValueAttribute>().Value;
             
@@ -61,7 +65,7 @@ namespace FortniteDotNet.Services
             };
             
             // Use our request helper to make a POST request, and return the response data deserialized into the appropriate type.
-            return await client.PostDataAsync<McpResponse>(Endpoints.Fortnite.Mcp.ClientQuestLogin(oAuthSession.AccountId, profileId), "{}").ConfigureAwait(false);
+            return await client.PostDataAsync<McpResponse>(Endpoints.Fortnite.Mcp.ClientQuestLogin(oAuthSession.AccountId, profileId, revision), "{}").ConfigureAwait(false);
         }
 
         /// <summary>
@@ -71,7 +75,7 @@ namespace FortniteDotNet.Services
         /// <param name="profile">The profile to retrieve the profile data of.</param>
         /// <param name="revision">The operation revision. This parameter is optional.</param>
         /// <param name="payload">The payload for the request.</param>
-        /// <returns></returns>
+        /// <returns>The <see cref="McpResponse"/> of the executed command.</returns>
         internal static async Task<McpResponse> MarkItemSeen(OAuthSession oAuthSession, Profile profile, MarkItemSeen payload, int revision = -1)
         {
             var profileId = profile.GetAttribute<ValueAttribute>().Value;
@@ -93,10 +97,16 @@ namespace FortniteDotNet.Services
                 JsonConvert.SerializeObject(payload)).ConfigureAwait(false);
         }
 
-        internal static async Task<McpResponse> GiftCatalogEntry(OAuthSession oAuthSession, Profile profile, GiftCatalogEntry payload, int revision = -1)
+        /// <summary>
+        /// Executes the GiftCatalogEntry command which gifts an item to another user from the account bound to the provided <see cref="OAuthSession"/>.
+        /// </summary>
+        /// <param name="oAuthSession">The <see cref="OAuthSession"/> to use for authentication.</param>
+        /// <param name="revision">The operation revision. This parameter is optional.</param>
+        /// <param name="payload">The payload for the request.</param>
+        /// <returns>The <see cref="McpResponse"/> of the executed command.</returns>
+        [Obsolete("Using this profile command directly may result in gifts being revoked, so proceed with caution!")]
+        internal static async Task<McpResponse> GiftCatalogEntry(OAuthSession oAuthSession, GiftCatalogEntry payload, int revision = -1)
         {
-            var profileId = profile.GetAttribute<ValueAttribute>().Value;
-            
             // We're using a using statement so that the initialised client is disposed of when the code block is exited.
             using var client = new WebClient
             {
@@ -110,8 +120,29 @@ namespace FortniteDotNet.Services
             };
             
             // Use our request helper to make a POST request, and return the response data deserialized into the appropriate type.
-            return await client.PostDataAsync<McpResponse>(Endpoints.Fortnite.Mcp.GiftCatalogEntry(oAuthSession.AccountId, profileId, revision),
+            return await client.PostDataAsync<McpResponse>(Endpoints.Fortnite.Mcp.GiftCatalogEntry(oAuthSession.AccountId, revision),
                 JsonConvert.SerializeObject(payload)).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="oAuthSession"></param>
+        /// <returns></returns>
+        internal static async Task<AccountPrivacy> GetAccountPrivacy(OAuthSession oAuthSession)
+        {
+            // We're using a using statement so that the initialised client is disposed of when the code block is exited.
+            using var client = new WebClient
+            {
+                Headers =
+                {
+                    // Set the Authorization header to the access token from the provided OAuthSession.
+                    [HttpRequestHeader.Authorization] = $"bearer {oAuthSession.AccessToken}"
+                }
+            };
+            
+            // Use our request helper to make a GET request, and return the response data deserialized into the appropriate type.
+            return await client.GetDataAsync<AccountPrivacy>(Endpoints.Fortnite.AccountPrivacy(oAuthSession.AccountId)).ConfigureAwait(false);
         }
     }
 }

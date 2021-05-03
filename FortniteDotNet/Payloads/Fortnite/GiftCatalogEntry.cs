@@ -14,6 +14,9 @@ namespace FortniteDotNet.Payloads.Fortnite
 
         [JsonProperty("currency")] 
         public string Currency { get; set; }
+
+        [JsonProperty("currencySubType")] 
+        public string CurrencySubType { get; set; }
         
         [JsonProperty("expectedTotalPrice")]
         public int ExpectedTotalPrice { get; set; }

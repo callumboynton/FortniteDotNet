@@ -1,9 +1,104 @@
-﻿using Newtonsoft.Json;
+﻿using System;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.Collections.Generic;
+using FortniteDotNet.Models.Fortnite.Profile.Stats;
 using FortniteDotNet.Models.Fortnite.Profile.Attributes;
 
 namespace FortniteDotNet.Models.Fortnite.Profile
 {
+    public class Profile
+    {
+        [JsonProperty("_id")]
+        public string _Id { get; set; }
+
+        [JsonProperty("created")]
+        public DateTime Created { get; set; }
+
+        [JsonProperty("updated")]
+        public DateTime Updated { get; set; }
+
+        [JsonProperty("rvn")]
+        public int Revision { get; set; }
+
+        [JsonProperty("wipeNumber")] 
+        public int WipeNumber { get; set; }
+
+        [JsonProperty("accountId")]
+        public string AccountId { get; set; }
+
+        [JsonProperty("profileId")]
+        public string ProfileId { get; set; }
+
+        [JsonProperty("version")]
+        public string Version { get; set; }
+
+        [JsonProperty("items")]
+        public Dictionary<string, ProfileItem> Items { get; set; }
+
+        [JsonProperty("stats")]
+        public ProfileStats Stats { get; set; }
+        
+        [JsonProperty("commandRevision")]
+        public int CommandRevision { get; set; }
+
+        public Profile(string profileId, JObject stats)
+        {
+            var attributes = stats.GetValue("attributes");
+            switch (profileId)
+            {
+                case "athena":
+                    Stats = new ProfileStats
+                    {
+                        Attributes = attributes.ToObject<AthenaStats>()
+                    };
+                    return;
+                case "common_core":
+                    Stats = new ProfileStats
+                    {
+                        Attributes = attributes.ToObject<CommonCoreStats>()
+                    };
+                    return;
+                case "common_public":
+                    Stats = new ProfileStats
+                    {
+                        Attributes = attributes.ToObject<CommonPublicStats>()
+                    };
+                    return;
+                case "creative":
+                    Stats = new ProfileStats
+                    {
+                        Attributes = attributes.ToObject<CreativeStats>()
+                    };
+                    return;
+                case "theater0":
+                    Stats = new ProfileStats
+                    {
+                        Attributes = attributes.ToObject<TheaterStats>()
+                    };
+                    return;
+                case "collections":
+                    Stats = new ProfileStats
+                    {
+                        Attributes = attributes.ToObject<object>()
+                    };
+                    return;
+                default:
+                    Stats = new ProfileStats
+                    {
+                        Attributes = attributes.ToObject<BaseStats>()
+                    };
+                    return;
+            }
+        }
+    }
+
+    public class ProfileStats
+    {
+        [JsonProperty("attributes")]
+        public object Attributes { get; set; }
+    }
+    
     public class ProfileItem
     {
         [JsonProperty("templateId")]

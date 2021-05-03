@@ -10,7 +10,6 @@ namespace FortniteDotNet
         public EventsService EventsService { get; }
         public FortniteService FortniteService { get; }
         
-        
         public FortniteApi()
         {
             AccountService = new();

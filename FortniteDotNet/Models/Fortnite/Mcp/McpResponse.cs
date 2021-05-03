@@ -1,7 +1,7 @@
 ﻿using System;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
-using FortniteDotNet.Models.Fortnite.Profile;
 
 namespace FortniteDotNet.Models.Fortnite.Mcp
 {
@@ -17,7 +17,7 @@ namespace FortniteDotNet.Models.Fortnite.Mcp
         public int ProfileChangesBaseRevision { get; set; }
         
         [JsonProperty("profileChanges")]
-        public List<ProfileChange> ProfileChanges { get; set; }
+        public List<JObject> ProfileChanges { get; set; }
         
         [JsonProperty("profileCommandRevision")]
         public int ProfileCommandRevision { get; set; }
@@ -27,5 +27,8 @@ namespace FortniteDotNet.Models.Fortnite.Mcp
         
         [JsonProperty("responseVersion")]
         public int ResponseVersion { get; set; }
+        
+        [JsonProperty("multiUpdate")]
+        public List<JObject> MultiUpdate { get; set; }
     }
 }

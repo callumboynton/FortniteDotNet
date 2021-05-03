@@ -80,18 +80,21 @@
                 private static string ClientCommand(string accountId, string command, string query) 
                     => $"{BASE_URL}/api/game/v2/profile/{accountId}/client/{command}?{query}";
 
-                public static string QueryProfile(string accountId, string profileId)
-                    => ClientCommand(accountId, "QueryProfile", $"profileId={profileId}");
+                public static string QueryProfile(string accountId, string profileId, int revision)
+                    => ClientCommand(accountId, "QueryProfile", $"profileId={profileId}&rvn={revision}");
 
-                public static string ClientQuestLogin(string accountId, string profileId)
-                    => ClientCommand(accountId, "ClientQuestLogin", $"profileId={profileId}");
+                public static string ClientQuestLogin(string accountId, string profileId, int revision)
+                    => ClientCommand(accountId, "ClientQuestLogin", $"profileId={profileId}&rvn={revision}");
 
                 public static string MarkItemSeen(string accountId, string profileId, int revision)
                     => ClientCommand(accountId, "MarkItemSeen", $"profileId={profileId}&rvn={revision}");
 
-                public static string GiftCatalogEntry(string accountId, string profileId, int revision)
-                    => ClientCommand(accountId, "GiftCatalogEntry", $"profileId={profileId}&rvn={revision}");
+                public static string GiftCatalogEntry(string accountId, int revision)
+                    => ClientCommand(accountId, "GiftCatalogEntry", $"profileId=common_core&rvn={revision}");
             }
+
+            public static string AccountPrivacy(string accountId)
+                => $"{BASE_URL}/api/game/v2/privacy/account/{accountId}";
         }
     }
 }
