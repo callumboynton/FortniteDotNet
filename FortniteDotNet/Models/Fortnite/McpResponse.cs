@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 
-namespace FortniteDotNet.Models.Fortnite.Mcp
+namespace FortniteDotNet.Models.Fortnite
 {
     public class McpResponse
     {

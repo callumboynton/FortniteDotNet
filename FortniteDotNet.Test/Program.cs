@@ -1,7 +1,5 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using FortniteDotNet.Enums.Accounts;
-using FortniteDotNet.Enums.Fortnite;
 
 namespace FortniteDotNet.Test
 {

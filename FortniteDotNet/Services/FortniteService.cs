@@ -4,11 +4,12 @@ using Newtonsoft.Json;
 using FortniteDotNet.Util;
 using System.Threading.Tasks;
 using FortniteDotNet.Attributes;
+using System.Collections.Generic;
 using FortniteDotNet.Enums.Fortnite;
 using FortniteDotNet.Models.Accounts;
 using FortniteDotNet.Models.Fortnite;
 using FortniteDotNet.Payloads.Fortnite;
-using FortniteDotNet.Models.Fortnite.Mcp;
+using FortniteDotNet.Models.Fortnite.Calendar;
 using FortniteDotNet.Models.Fortnite.Storefront;
 
 namespace FortniteDotNet.Services
@@ -191,7 +192,135 @@ namespace FortniteDotNet.Services
             };
             
             // Use our request helper to make a GET request, and return the response data deserialized into the appropriate type.
-            return await client.GetDataAsync<Catalog>(Endpoints.Fortnite.Catalog).ConfigureAwait(false);
+            return await client.GetDataAsync<Catalog>(Endpoints.Fortnite.Storefront.Catalog).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Gets the current keychain.
+        /// </summary>
+        /// <param name="oAuthSession">The <see cref="OAuthSession"/> to use for authentication.</param>
+        /// <returns>The current keychain as a list of strings.</returns>
+        public async Task<List<string>> GetKeychain(OAuthSession oAuthSession)
+        {
+            // We're using a using statement so that the initialised client is disposed of when the code block is exited.
+            using var client = new WebClient
+            {
+                Headers =
+                {
+                    // Set the Authorization header to the access token from the provided OAuthSession.
+                    [HttpRequestHeader.Authorization] = $"bearer {oAuthSession.AccessToken}"
+                }
+            };
+            
+            // Use our request helper to make a GET request, and return the response data deserialized into the appropriate type.
+            return await client.GetDataAsync<List<string>>(Endpoints.Fortnite.Storefront.Keychain).ConfigureAwait(false);
+        }
+        
+        /// <summary>
+        /// Gets the current timeline.
+        /// </summary>
+        /// <param name="oAuthSession">The <see cref="OAuthSession"/> to use for authentication.</param>
+        /// <returns>The current <see cref="Timeline"/>.</returns>
+        public async Task<Timeline> GetTimeline(OAuthSession oAuthSession)
+        {
+            // We're using a using statement so that the initialised client is disposed of when the code block is exited.
+            using var client = new WebClient
+            {
+                Headers =
+                {
+                    // Set the Authorization header to the access token from the provided OAuthSession.
+                    [HttpRequestHeader.Authorization] = $"bearer {oAuthSession.AccessToken}"
+                }
+            };
+            
+            // Use our request helper to make a GET request, and return the response data deserialized into the appropriate type.
+            return await client.GetDataAsync<Timeline>(Endpoints.Fortnite.Timeline).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Gets the list of system cloudstorage files.
+        /// </summary>
+        /// <param name="oAuthSession">The <see cref="OAuthSession"/> to use for authentication.</param>
+        /// <returns>A list of system <see cref="CloudstorageFile"/>s.</returns>
+        public async Task<List<CloudstorageFile>> GetSystemCloudstorageFiles(OAuthSession oAuthSession)
+        {
+            // We're using a using statement so that the initialised client is disposed of when the code block is exited.
+            using var client = new WebClient
+            {
+                Headers =
+                {
+                    // Set the Authorization header to the access token from the provided OAuthSession.
+                    [HttpRequestHeader.Authorization] = $"bearer {oAuthSession.AccessToken}"
+                }
+            };
+            
+            // Use our request helper to make a GET request, and return the response data deserialized into the appropriate type.
+            return await client.GetDataAsync<List<CloudstorageFile>>(Endpoints.Fortnite.Cloudstorage.System).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Gets the system cloudstorage file bound to the provided unique filename.
+        /// </summary>
+        /// <param name="oAuthSession">The <see cref="OAuthSession"/> to use for authentication.</param>
+        /// <param name="uniqueFilename">The unique filename of the desired system cloudstorage file.</param>
+        /// <returns>The system <see cref="CloudstorageFile"/> bound to the provided unique filename.</returns>
+        public async Task<CloudstorageFile> GetSystemCloudstorageFile(OAuthSession oAuthSession, string uniqueFilename)
+        {
+            // We're using a using statement so that the initialised client is disposed of when the code block is exited.
+            using var client = new WebClient
+            {
+                Headers =
+                {
+                    // Set the Authorization header to the access token from the provided OAuthSession.
+                    [HttpRequestHeader.Authorization] = $"bearer {oAuthSession.AccessToken}"
+                }
+            };
+            
+            // Use our request helper to make a GET request, and return the response data deserialized into the appropriate type.
+            return await client.GetDataAsync<CloudstorageFile>(Endpoints.Fortnite.Cloudstorage.SystemFile(uniqueFilename)).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Gets the list of user cloudstorage files of the account bound to the provided <see cref="OAuthSession"/>. 
+        /// </summary>
+        /// <param name="oAuthSession">The <see cref="OAuthSession"/> to use for authentication.</param>
+        /// <returns>A list of user <see cref="CloudstorageFile"/>s of the account bound to the provided <see cref="OAuthSession"/>.</returns>
+        internal static async Task<List<CloudstorageFile>> GetUserCloudstorageFiles(OAuthSession oAuthSession)
+        {
+            // We're using a using statement so that the initialised client is disposed of when the code block is exited.
+            using var client = new WebClient
+            {
+                Headers =
+                {
+                    // Set the Authorization header to the access token from the provided OAuthSession.
+                    [HttpRequestHeader.Authorization] = $"bearer {oAuthSession.AccessToken}"
+                }
+            };
+            
+            // Use our request helper to make a GET request, and return the response data deserialized into the appropriate type.
+            return await client.GetDataAsync<List<CloudstorageFile>>(Endpoints.Fortnite.Cloudstorage.User(oAuthSession.AccountId)).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Gets the user cloudstorage file bound to the provided unique filename of the account bound to the provided <see cref="OAuthSession"/>.
+        /// </summary>
+        /// <param name="oAuthSession">The <see cref="OAuthSession"/> to use for authentication.</param>
+        /// <param name="uniqueFilename">The unique filename of the desired user cloudstorage file.</param>
+        /// <returns>The user <see cref="CloudstorageFile"/> bound to the provided unique filename.</returns>
+        internal static async Task<List<CloudstorageFile>> GetUserCloudstorageFile(OAuthSession oAuthSession, string uniqueFilename)
+        {
+            // We're using a using statement so that the initialised client is disposed of when the code block is exited.
+            using var client = new WebClient
+            {
+                Headers =
+                {
+                    // Set the Authorization header to the access token from the provided OAuthSession.
+                    [HttpRequestHeader.Authorization] = $"bearer {oAuthSession.AccessToken}"
+                }
+            };
+            
+            // Use our request helper to make a GET request, and return the response data deserialized into the appropriate type.
+            return await client.GetDataAsync<List<CloudstorageFile>>(Endpoints.Fortnite.Cloudstorage.UserFile(oAuthSession.AccountId, uniqueFilename)).ConfigureAwait(false);
         }
     }
 }

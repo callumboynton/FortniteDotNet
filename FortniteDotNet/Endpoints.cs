@@ -93,11 +93,37 @@
                     => ClientCommand(accountId, "GiftCatalogEntry", $"profileId=common_core&rvn={revision}");
             }
 
+            public struct Storefront
+            {
+                public static string Catalog
+                    => $"{BASE_URL}/api/storefront/v2/catalog";
+
+                public static string Keychain
+                    => $"{BASE_URL}/api/storefront/v2/keychain";
+            }
+
+            public struct Cloudstorage
+            {
+                public static string System
+                    => $"{BASE_URL}/api/cloudstorage/system";
+
+                public static string SystemFile(string uniqueFileName)
+                    => $"{System}/{uniqueFileName}";
+
+                public static string User(string id)
+                    => $"{BASE_URL}/api/cloudstorage/user/{id}";
+
+                public static string UserFile(string id, string uniqueFileName)
+                    => $"{User(id)}/{uniqueFileName}";
+            }
+            
             public static string AccountPrivacy(string accountId)
                 => $"{BASE_URL}/api/game/v2/privacy/account/{accountId}";
             
-            public static string Catalog
-                => $"{BASE_URL}/api/storefront/v2/catalog";
+            public static string Timeline
+                => $"{BASE_URL}/api/calendar/v1/timeline";
+            
+            
         }
     }
 }

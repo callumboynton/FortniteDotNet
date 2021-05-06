@@ -11,7 +11,6 @@ using FortniteDotNet.Models.Channels;
 using FortniteDotNet.Models.Fortnite;
 using FortniteDotNet.Payloads.Channels;
 using FortniteDotNet.Payloads.Fortnite;
-using FortniteDotNet.Models.Fortnite.Mcp;
 
 namespace FortniteDotNet.Models.Accounts
 {

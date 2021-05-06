@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using FortniteDotNet.Enums.Fortnite;
 using FortniteDotNet.Models.Accounts;
 using FortniteDotNet.Payloads.Fortnite;
-using FortniteDotNet.Models.Fortnite.Mcp;
 
 namespace FortniteDotNet.Models.Fortnite.Storefront
 {
