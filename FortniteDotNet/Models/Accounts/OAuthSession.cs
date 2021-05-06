@@ -3,11 +3,15 @@ using Newtonsoft.Json;
 using System.Threading.Tasks;
 using FortniteDotNet.Services;
 using System.Collections.Generic;
-using FortniteDotNet.Enums.Channels;
 using FortniteDotNet.Enums.Events;
-using FortniteDotNet.Models.Channels;
 using FortniteDotNet.Models.Events;
+using FortniteDotNet.Enums.Fortnite;
+using FortniteDotNet.Enums.Channels;
+using FortniteDotNet.Models.Channels;
+using FortniteDotNet.Models.Fortnite;
 using FortniteDotNet.Payloads.Channels;
+using FortniteDotNet.Payloads.Fortnite;
+using FortniteDotNet.Models.Fortnite.Mcp;
 
 namespace FortniteDotNet.Models.Accounts
 {
@@ -64,6 +68,8 @@ namespace FortniteDotNet.Models.Accounts
         [JsonProperty("scope")]
         public List<string> Scope { get; set; }
 
+        #region AccountService
+        
         /// <inheritdoc cref="AccountService.KillOAuthSession"/>
         public async Task KillSessionAsync()
             => await AccountService.KillOAuthSession(this).ConfigureAwait(false);
@@ -111,6 +117,10 @@ namespace FortniteDotNet.Models.Accounts
         public async Task DeleteExternalAuthAsync(string type)
             => await AccountService.DeleteExternalAuth(this, type).ConfigureAwait(false);
 
+        #endregion
+        
+        #region ChannelsService
+        
         /// <inheritdoc cref="ChannelsService.GetUserSetting"/>
         public async Task<UserSetting> GetUserSettingAsync(SettingKey settingKey)
             => await ChannelsService.GetUserSetting(this, settingKey);
@@ -123,6 +133,10 @@ namespace FortniteDotNet.Models.Accounts
         public async Task<List<string>> GetAvailableSettingValuesAsync(SettingKey settingKey)
             => await ChannelsService.GetAvailableSettingValues(this, settingKey);
         
+        #endregion
+        
+        #region EventsService
+        
         /// <inheritdoc cref="EventsService.GetEventData"/>
         public async Task<EventData> GetEventDataAsync(Region region, Platform platform)
             => await EventsService.GetEventData(this, region, platform);
@@ -130,6 +144,28 @@ namespace FortniteDotNet.Models.Accounts
         /// <inheritdoc cref="EventsService.GetEventData"/>
         public async Task<Leaderboard> GetLeaderboardDataAsync(string eventId, string eventWindowId)
             => await EventsService.GetLeaderboardData(this, eventId, eventWindowId);
+        
+        #endregion
+        
+        #region FortniteService
+
+        /// <inheritdoc cref="FortniteService.QueryProfile"/>
+        public async Task<McpResponse> QueryProfile(Profile profile, int revision = -1)
+            => await FortniteService.QueryProfile(this, profile, revision);
+        
+        /// <inheritdoc cref="FortniteService.ClientQuestLogin"/>
+        public async Task<McpResponse> ClientQuestLogin(Profile profile, int revision = -1)
+            => await FortniteService.ClientQuestLogin(this, profile, revision);
+        
+        /// <inheritdoc cref="FortniteService.MarkItemSeen"/>
+        public async Task<McpResponse> MarkItemSeen(Profile profile, MarkItemSeen payload, int revision = -1)
+            => await FortniteService.MarkItemSeen(this, profile, payload, revision);
+        
+        /// <inheritdoc cref="FortniteService.GetAccountPrivacy"/>
+        public async Task<AccountPrivacy> GetAccountPrivacy()
+            => await FortniteService.GetAccountPrivacy(this);
+        
+        #endregion
         
         public async ValueTask DisposeAsync()
         {

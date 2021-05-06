@@ -95,6 +95,9 @@
 
             public static string AccountPrivacy(string accountId)
                 => $"{BASE_URL}/api/game/v2/privacy/account/{accountId}";
+            
+            public static string Catalog
+                => $"{BASE_URL}/api/storefront/v2/catalog";
         }
     }
 }

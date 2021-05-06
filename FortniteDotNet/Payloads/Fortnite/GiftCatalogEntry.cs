@@ -22,7 +22,7 @@ namespace FortniteDotNet.Payloads.Fortnite
         public int ExpectedTotalPrice { get; set; }
 
         [JsonProperty("receiverAccountIds")]
-        public List<string> ReceiverAccountIds { get; set; }
+        public string[] ReceiverAccountIds { get; set; }
 
         [JsonProperty("giftWrapTemplateId")]
         public GiftBox GiftWrapTemplateId { get; set; }

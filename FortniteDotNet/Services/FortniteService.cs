@@ -9,6 +9,7 @@ using FortniteDotNet.Models.Accounts;
 using FortniteDotNet.Models.Fortnite;
 using FortniteDotNet.Payloads.Fortnite;
 using FortniteDotNet.Models.Fortnite.Mcp;
+using FortniteDotNet.Models.Fortnite.Storefront;
 
 namespace FortniteDotNet.Services
 {
@@ -125,10 +126,10 @@ namespace FortniteDotNet.Services
         }
 
         /// <summary>
-        /// 
+        /// Gets the privacy configuration of the account bound to the provided <see cref="OAuthSession"/>.
         /// </summary>
-        /// <param name="oAuthSession"></param>
-        /// <returns></returns>
+        /// <param name="oAuthSession">The <see cref="OAuthSession"/> to use for authentication.</param>
+        /// <returns>The <see cref="AccountPrivacy"/> of the account bound to the provided <see cref="OAuthSession"/>.</returns>
         internal static async Task<AccountPrivacy> GetAccountPrivacy(OAuthSession oAuthSession)
         {
             // We're using a using statement so that the initialised client is disposed of when the code block is exited.
@@ -143,6 +144,54 @@ namespace FortniteDotNet.Services
             
             // Use our request helper to make a GET request, and return the response data deserialized into the appropriate type.
             return await client.GetDataAsync<AccountPrivacy>(Endpoints.Fortnite.AccountPrivacy(oAuthSession.AccountId)).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Sets the privacy configuration of the account bound to the provided <see cref="OAuthSession"/>.
+        /// </summary>
+        /// <param name="oAuthSession">The <see cref="OAuthSession"/> to use for authentication.</param>
+        /// <param name="optOutOfPublicLeaderboards">Should the account be shown on public leaderboards?</param>
+        /// <returns>The <see cref="AccountPrivacy"/> of the account bound to the provided <see cref="OAuthSession"/>.</returns>
+        internal static async Task<AccountPrivacy> SetAccountPrivacy(OAuthSession oAuthSession, bool optOutOfPublicLeaderboards)
+        {
+            // We're using a using statement so that the initialised client is disposed of when the code block is exited.
+            using var client = new WebClient
+            {
+                Headers =
+                {
+                    // Set the Authorization header to the access token from the provided OAuthSession.
+                    [HttpRequestHeader.Authorization] = $"bearer {oAuthSession.AccessToken}"
+                }
+            };
+            
+            // Use our request helper to make a GET request, and return the response data deserialized into the appropriate type.
+            return await client.PostDataAsync<AccountPrivacy>(Endpoints.Fortnite.AccountPrivacy(oAuthSession.AccountId), 
+                JsonConvert.SerializeObject(new AccountPrivacy
+                {
+                    AccountId = oAuthSession.AccountId,
+                    OptOutOfPublicLeaderboards = optOutOfPublicLeaderboards
+                })).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Gets the current catalog.
+        /// </summary>
+        /// <param name="oAuthSession">The <see cref="OAuthSession"/> to use for authentication.</param>
+        /// <returns>The current <see cref="Catalog"/>.</returns>
+        public async Task<Catalog> GetCatalog(OAuthSession oAuthSession)
+        {
+            // We're using a using statement so that the initialised client is disposed of when the code block is exited.
+            using var client = new WebClient
+            {
+                Headers =
+                {
+                    // Set the Authorization header to the access token from the provided OAuthSession.
+                    [HttpRequestHeader.Authorization] = $"bearer {oAuthSession.AccessToken}"
+                }
+            };
+            
+            // Use our request helper to make a GET request, and return the response data deserialized into the appropriate type.
+            return await client.GetDataAsync<Catalog>(Endpoints.Fortnite.Catalog).ConfigureAwait(false);
         }
     }
 }
