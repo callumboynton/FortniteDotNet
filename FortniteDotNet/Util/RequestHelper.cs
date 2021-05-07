@@ -28,7 +28,7 @@ namespace FortniteDotNet.Util
             }
         }
         
-        internal static async Task<T> UploadDataAsync<T>(this WebClient client, string address, string data, Method method)
+        private static async Task<T> UploadDataAsync<T>(this WebClient client, string address, string data, Method method)
         {
             try
             {
@@ -46,14 +46,38 @@ namespace FortniteDotNet.Util
                 throw exception;
             }
         }
+        
+        private static async Task UploadDataAsync(this WebClient client, string address, byte[] data, Method method)
+        {
+            try
+            {
+                await client.UploadDataTaskAsync(address, method.ToString(), data).ConfigureAwait(false);
+            }
+            catch (WebException ex)
+            {
+                if (ex.Response == null)
+                    return;
+                
+                using var reader = new StreamReader(ex.Response.GetResponseStream());
+                var body = await reader.ReadToEndAsync().ConfigureAwait(false);
+                var exception = JsonConvert.DeserializeObject<EpicException>(body);
+                throw exception;
+            }
+        }
 
         internal static async Task<T> PostDataAsync<T>(this WebClient client, string address, string data)
-            => await UploadDataAsync<T>(client, address, data, Method.POST);
+            => await UploadDataAsync<T>(client, address, data, Method.POST).ConfigureAwait(false);
+        
+        internal static async Task PostDataAsync(this WebClient client, string address, string data)
+            => await UploadDataAsync<object>(client, address, data, Method.POST).ConfigureAwait(false);
 
-        internal static async Task<T> PutDataAsync<T>(this WebClient client, string address, string data)
-            => await UploadDataAsync<T>(client, address, data, Method.PUT);
+        internal static async Task PutDataAsync(this WebClient client, string address, string data)
+            => await UploadDataAsync<object>(client, address, data, Method.PUT).ConfigureAwait(false);
+
+        internal static async Task PutDataAsync(this WebClient client, string address, byte[] data)
+            => await UploadDataAsync(client, address, data, Method.PUT).ConfigureAwait(false);
 
         internal static async Task DeleteDataAsync(this WebClient client, string address)
-            => await UploadDataAsync<object>(client, address, string.Empty, Method.DELETE);
+            => await UploadDataAsync<object>(client, address, string.Empty, Method.DELETE).ConfigureAwait(false);
     }
 }

@@ -1,5 +1,4 @@
 ﻿using System.Net;
-using System.Web;
 using Newtonsoft.Json;
 using FortniteDotNet.Util;
 using System.Threading.Tasks;
@@ -62,8 +61,8 @@ namespace FortniteDotNet.Services
                 }
             };
             
-            // Use our request helper to make a GET request, and return the response data deserialized into the appropriate type.
-            await client.PutDataAsync<UserSetting>(Endpoints.Channels.Setting(oAuthSession.AccountId, setting),
+            // Use our request helper to make a PUT request.
+            await client.PutDataAsync(Endpoints.Channels.Setting(oAuthSession.AccountId, setting),
                 JsonConvert.SerializeObject(payload)).ConfigureAwait(false);
         }
 

@@ -125,6 +125,8 @@ namespace FortniteDotNet.Services
             return await client.PostDataAsync<McpResponse>(Endpoints.Fortnite.Mcp.GiftCatalogEntry(oAuthSession.AccountId, revision),
                 JsonConvert.SerializeObject(payload)).ConfigureAwait(false);
         }
+        
+        // TODO: finish mcp commands
 
         /// <summary>
         /// Gets the privacy configuration of the account bound to the provided <see cref="OAuthSession"/>.
@@ -165,7 +167,7 @@ namespace FortniteDotNet.Services
                 }
             };
             
-            // Use our request helper to make a GET request, and return the response data deserialized into the appropriate type.
+            // Use our request helper to make a POST request, and return the response data deserialized into the appropriate type.
             return await client.PostDataAsync<AccountPrivacy>(Endpoints.Fortnite.AccountPrivacy(oAuthSession.AccountId), 
                 JsonConvert.SerializeObject(new AccountPrivacy
                 {
@@ -322,5 +324,55 @@ namespace FortniteDotNet.Services
             // Use our request helper to make a GET request, and return the response data deserialized into the appropriate type.
             return await client.GetDataAsync<List<CloudstorageFile>>(Endpoints.Fortnite.Cloudstorage.UserFile(oAuthSession.AccountId, uniqueFilename)).ConfigureAwait(false);
         }
+        
+        /// <summary>
+        /// Puts the user cloudstorage file bound to the provided unique filename of the account bound to the provided <see cref="OAuthSession"/>.
+        /// </summary>
+        /// <param name="oAuthSession">The <see cref="OAuthSession"/> to use for authentication.</param>
+        /// <param name="uniqueFilename">The unique filename of the desired user cloudstorage file.</param>
+        /// <param name="fileBytes">The bytes of the desired file to update.</param>
+        /// <returns>The user <see cref="CloudstorageFile"/> bound to the provided unique filename.</returns>
+        internal static async Task PutUserCloudstorageFile(OAuthSession oAuthSession, string uniqueFilename, byte[] fileBytes)
+        {
+            // We're using a using statement so that the initialised client is disposed of when the code block is exited.
+            using var client = new WebClient
+            {
+                Headers =
+                {
+                    // Set the Authorization header to the access token from the provided OAuthSession.
+                    [HttpRequestHeader.Authorization] = $"bearer {oAuthSession.AccessToken}"
+                }
+            };
+            
+            // Use our request helper to make a PUT request.
+            await client.PutDataAsync(Endpoints.Fortnite.Cloudstorage.UserFile(oAuthSession.AccountId, uniqueFilename), fileBytes).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Gets the receipts of the account bound to the provided <see cref="OAuthSession"/>.
+        /// </summary>
+        /// <param name="oAuthSession">The <see cref="OAuthSession"/> to use for authentication.</param>
+        /// <returns>A list of <see cref="Receipt"/>s from the account bound to the provided <see cref="OAuthSession"/>.</returns>
+        internal static async Task<List<Receipt>> GetReceipts(OAuthSession oAuthSession)
+        {
+            // We're using a using statement so that the initialised client is disposed of when the code block is exited.
+            using var client = new WebClient
+            {
+                Headers =
+                {
+                    // Set the Authorization header to the access token from the provided OAuthSession.
+                    [HttpRequestHeader.Authorization] = $"bearer {oAuthSession.AccessToken}"
+                }
+            };
+            
+            // Use our request helper to make a GET request, and return the response data deserialized into the appropriate type.
+            return await client.GetDataAsync<List<Receipt>>(Endpoints.Fortnite.Receipts(oAuthSession.AccountId)).ConfigureAwait(false);
+        }
+        
+        // TODO: add creative queries, can't be fucking arsed to do them right now
+        // GET api/game/v2/creative/favorites/{accountId}
+        // PUT api/game/v2/creative/favorites/{accountId}/{code}
+        // DELETE api/game/v2/creative/favorites/{accountId}/{code}
+        // GET api/game/v2/creative/history/{accountId}
     }
 }
