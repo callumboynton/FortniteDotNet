@@ -1,8 +1,7 @@
 ﻿using System;
-using System.Text;
 using System.Threading.Tasks;
-using FortniteDotNet.Enums.Accounts;
 using FortniteDotNet.Models.XMPP;
+using FortniteDotNet.Enums.Accounts;
 
 namespace FortniteDotNet.Test
 {
@@ -22,11 +21,7 @@ namespace FortniteDotNet.Test
                         { "secret", "" }
                     });
 
-                var client = new XMPPClient(authSession);                
-                client.OnMessage += async (_, args) =>
-                {
-                    Console.WriteLine(args.MessageType);
-                };
+                var client = new XMPPClient(authSession);
                 await client.Initialize();
                 
             }).ConfigureAwait(false).GetAwaiter().GetResult();

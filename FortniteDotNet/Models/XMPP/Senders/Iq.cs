@@ -1,6 +1,6 @@
-﻿using System.Text;
+﻿using System.Xml;
+using System.Text;
 using System.Threading.Tasks;
-using System.Xml;
 
 namespace FortniteDotNet.Models.XMPP
 {
@@ -23,16 +23,16 @@ namespace FortniteDotNet.Models.XMPP
                         {
                             writer.WriteStartElement("resource");
                             {
-                                await writer.WriteStringAsync(Resource);
+                                await writer.WriteStringAsync(Resource).ConfigureAwait(false);
                             }
-                            await writer.WriteEndElementAsync();
+                            await writer.WriteEndElementAsync().ConfigureAwait(false);
                         }
-                        await writer.WriteEndElementAsync();
+                        await writer.WriteEndElementAsync().ConfigureAwait(false);
                     }
-                    await writer.WriteEndElementAsync();
-                    await writer.FlushAsync();
+                    await writer.WriteEndElementAsync().ConfigureAwait(false);
+                    await writer.FlushAsync().ConfigureAwait(false);
             
-                    await SendMessage(builder.ToString());
+                    await SendAsync(builder.ToString()).ConfigureAwait(false);
                     break;
                 }
                 case "_xmpp_session1":
@@ -42,12 +42,12 @@ namespace FortniteDotNet.Models.XMPP
                         writer.WriteAttributeString("id", id);
                         writer.WriteAttributeString("type", "set");
                         writer.WriteStartElement("session", "urn:ietf:params:xml:ns:xmpp-session");
-                        await writer.WriteEndElementAsync();
+                        await writer.WriteEndElementAsync().ConfigureAwait(false);
                     }
-                    await writer.WriteEndElementAsync();
-                    await writer.FlushAsync();
+                    await writer.WriteEndElementAsync().ConfigureAwait(false);
+                    await writer.FlushAsync().ConfigureAwait(false);
             
-                    await SendMessage(builder.ToString());
+                    await SendAsync(builder.ToString()).ConfigureAwait(false);
                     break;
                 }
             }

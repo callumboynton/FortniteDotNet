@@ -1,28 +1,31 @@
 ﻿using System;
 using System.Xml;
 using System.Text;
-using Newtonsoft.Json;
 using System.Threading.Tasks;
 
 namespace FortniteDotNet.Models.XMPP
 {
     public partial class XMPPClient
     {
-        public async Task SendPresence(Presence presence, bool isAvailable = true)
+        public async Task SendMessage(string body, string to, bool isGroupChat = false)
         {
             var builder = new StringBuilder();
             var writer = XmlWriter.Create(builder, WriterSettings);
 
-            writer.WriteStartElement("presence");
-            writer.WriteAttributeString("type", isAvailable ? "available" : "unavailable");
-            writer.WriteStartElement("status");
+            writer.WriteStartElement("message");
+            writer.WriteAttributeString("to", to);
+
+            if (isGroupChat)
             {
-                await writer.WriteStringAsync(JsonConvert.SerializeObject(presence)).ConfigureAwait(false);
+                writer.WriteAttributeString("id", Guid.NewGuid().ToString().Replace("-", "").ToUpper());
+                writer.WriteAttributeString("type", "groupchat");
             }
-            await writer.WriteEndElementAsync().ConfigureAwait(false);
-            writer.WriteStartElement("delay", "urn:xmpp:delay");
+            else
+                writer.WriteAttributeString("type", "chat");
+            
+            writer.WriteStartElement("body");
             {
-                writer.WriteAttributeString("stamp", DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss.fffZ"));
+                await writer.WriteStringAsync(body).ConfigureAwait(false);
             }
             await writer.WriteEndElementAsync().ConfigureAwait(false);
             await writer.WriteEndElementAsync().ConfigureAwait(false);

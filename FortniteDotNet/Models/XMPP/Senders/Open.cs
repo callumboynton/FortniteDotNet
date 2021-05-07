@@ -16,10 +16,10 @@ namespace FortniteDotNet.Models.XMPP
                 writer.WriteAttributeString("to", "prod.ol.epicgames.com");
                 writer.WriteAttributeString("version", "1.0");
             }
-            await writer.WriteEndElementAsync();
-            await writer.FlushAsync();
+            await writer.WriteEndElementAsync().ConfigureAwait(false);
+            await writer.FlushAsync().ConfigureAwait(false);
             
-            await SendMessage(builder.ToString());
+            await SendAsync(builder.ToString()).ConfigureAwait(false);
         }
     }
 }

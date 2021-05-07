@@ -19,13 +19,13 @@
             }
 
             internal static string Account(string accountId) 
-                => $"{BASE_URL}/api/internal/account/{accountId}";
+                => $"{BASE_URL}/api/public/account/{accountId}";
 
             internal static string Account(string[] accountIds) 
-                => $"{BASE_URL}/api/internal/account?accountId={string.Join("&accountId=", accountIds)}";
+                => $"{BASE_URL}/api/public/account?accountId={string.Join("&accountId=", accountIds)}";
 
             internal static string Metadata(string accountId) 
-                => $"{BASE_URL}/api/accounts/{accountId}/metadata";
+                => $"{BASE_URL}/api/public/{accountId}/metadata";
 
             internal static string DeviceAuths(string accountId) 
                 => $"{Account(accountId)}/deviceAuths";
@@ -40,10 +40,10 @@
                 => $"{ExternalAuths(accountId)}/{type}";
 
             internal static string DisplayNameLookup(string displayName) 
-                => $"{BASE_URL}/api/internal/account/displayName/{displayName}";
+                => $"{BASE_URL}/api/public/account/displayName/{displayName}";
 
             internal static string EmailLookup(string email) 
-                => $"{BASE_URL}/api/internal/account/email/{email}";
+                => $"{BASE_URL}/api/public/account/email/{email}";
         }
 
         internal struct Channels

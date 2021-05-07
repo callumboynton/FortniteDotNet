@@ -18,11 +18,11 @@ namespace FortniteDotNet.Models.XMPP
             {
                 writer.WriteAttributeString("mechanism", "PLAIN");
             }
-            await writer.WriteStringAsync(auth);
-            await writer.WriteEndElementAsync();
-            await writer.FlushAsync();
+            await writer.WriteStringAsync(auth).ConfigureAwait(false);
+            await writer.WriteEndElementAsync().ConfigureAwait(false);
+            await writer.FlushAsync().ConfigureAwait(false);
             
-            await SendMessage(builder.ToString());
+            await SendAsync(builder.ToString()).ConfigureAwait(false);
         }
     }
 }
