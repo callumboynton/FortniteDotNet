@@ -1,5 +1,4 @@
-﻿using System.Dynamic;
-using FortniteDotNet.Services;
+﻿using FortniteDotNet.Services;
 
 namespace FortniteDotNet
 {

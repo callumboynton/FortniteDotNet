@@ -1,10 +1,10 @@
 ﻿using System.Net;
+using Newtonsoft.Json;
 using FortniteDotNet.Util;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using FortniteDotNet.Models.Friends;
 using FortniteDotNet.Models.Accounts;
-using Newtonsoft.Json;
 
 namespace FortniteDotNet.Services
 {

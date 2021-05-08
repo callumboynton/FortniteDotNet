@@ -20,6 +20,6 @@ namespace FortniteDotNet.Enums.Fortnite
         GiftWrap3,
         
         [EnumMember(Value = "GiftBox:gb_giftwrap4")]
-        GiftWrap4,
+        GiftWrap4
     }
 }

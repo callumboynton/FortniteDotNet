@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System.Collections.Generic;
 
-namespace FortniteDotNet.Models.XMPP
+namespace FortniteDotNet.Models.XMPP.Payloads
 {
     public class Presence
     {

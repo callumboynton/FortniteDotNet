@@ -38,6 +38,12 @@ namespace FortniteDotNet.Models.Friends
         
         [JsonProperty("created")]
         public DateTime Created { get; set; }
+        
+        [JsonProperty("status")]
+        public string Status { get; set; }
+        
+        [JsonProperty("direction")]
+        public string Direction { get; set; }
     }
 
     public class SuggestedFriend

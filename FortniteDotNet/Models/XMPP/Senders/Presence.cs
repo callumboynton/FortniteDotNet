@@ -3,6 +3,7 @@ using System.Xml;
 using System.Text;
 using Newtonsoft.Json;
 using System.Threading.Tasks;
+using FortniteDotNet.Models.XMPP.Payloads;
 
 namespace FortniteDotNet.Models.XMPP
 {
@@ -10,6 +11,8 @@ namespace FortniteDotNet.Models.XMPP
     {
         public async Task SendPresence(Presence presence, bool isAvailable = true)
         {
+            LastPresence = presence;
+            
             var builder = new StringBuilder();
             var writer = XmlWriter.Create(builder, WriterSettings);
 
