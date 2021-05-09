@@ -173,5 +173,25 @@
             internal static string Block(string accountId, string friendId)
                 => $"{BASE_URL}/api/v1/{accountId}/blocklist/{friendId}";
         }
+
+        internal struct Party
+        {
+            private const string BASE_URL = "https://party-service-prod.ol.epicgames.com/party/api/v1/Fortnite";
+
+            internal static string Parties
+                => $"{BASE_URL}/parties";
+
+            internal static string QueryParty(string partyId)
+                => $"{Parties}/{partyId}";
+
+            internal static string PartyPings(string accountId, string pingerId)
+                => $"{BASE_URL}/user/{accountId}/pings/{pingerId}/parties";
+
+            internal static string Join(string partyId, string accountId)
+                => $"{QueryParty(partyId)}/members/{accountId}/join";
+
+            internal static string MemberMeta(string partyId, string accountId)
+                => $"{QueryParty(partyId)}/members/{accountId}/meta";
+        }
     }
 }

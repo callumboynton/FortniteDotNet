@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Xml;
 using System.Text;
 using Newtonsoft.Json;
@@ -32,6 +33,8 @@ namespace FortniteDotNet.Models.XMPP
             await writer.FlushAsync().ConfigureAwait(false);
             
             await SendAsync(builder.ToString()).ConfigureAwait(false);
+            
+            await File.AppendAllTextAsync("C:/Users/Darkblade/presence.txt", builder + "\n\n");
         }
     }
 }

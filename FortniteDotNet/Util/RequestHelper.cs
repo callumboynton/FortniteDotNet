@@ -77,6 +77,9 @@ namespace FortniteDotNet.Util
         internal static async Task PutDataAsync(this WebClient client, string address, byte[] data)
             => await UploadDataAsync(client, address, data, Method.PUT).ConfigureAwait(false);
 
+        internal static async Task PatchDataAsync(this WebClient client, string address, string data)
+            => await UploadDataAsync<object>(client, address, data, Method.PATCH).ConfigureAwait(false);
+
         internal static async Task DeleteDataAsync(this WebClient client, string address)
             => await UploadDataAsync<object>(client, address, string.Empty, Method.DELETE).ConfigureAwait(false);
     }

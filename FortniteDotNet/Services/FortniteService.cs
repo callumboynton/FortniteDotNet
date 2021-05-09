@@ -162,6 +162,8 @@ namespace FortniteDotNet.Services
             {
                 Headers =
                 {
+                    // This is so Epic Games' API knows what kind of data we're providing.
+                    [HttpRequestHeader.ContentType] = "application/json",
                     // Set the Authorization header to the access token from the provided OAuthSession.
                     [HttpRequestHeader.Authorization] = $"bearer {oAuthSession.AccessToken}"
                 }

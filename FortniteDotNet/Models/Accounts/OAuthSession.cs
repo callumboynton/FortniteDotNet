@@ -2,8 +2,10 @@
 using Newtonsoft.Json;
 using System.Threading.Tasks;
 using FortniteDotNet.Services;
+using FortniteDotNet.Models.XMPP;
 using System.Collections.Generic;
 using FortniteDotNet.Enums.Events;
+using FortniteDotNet.Models.Party;
 using FortniteDotNet.Models.Events;
 using FortniteDotNet.Enums.Fortnite;
 using FortniteDotNet.Enums.Channels;
@@ -253,6 +255,26 @@ namespace FortniteDotNet.Models.Accounts
         /// <inheritdoc cref="FriendsService.UpdateFriendSettings"/>
         public async Task UpdateFriendSettings(bool acceptInvites)
             => await FriendsService.UpdateFriendSettings(this, acceptInvites);
+        
+        #endregion
+        
+        #region PartyService
+
+        /// <inheritdoc cref="PartyService.CreateParty"/>
+        public async Task<PartyInfo> CreateParty(XMPPClient xmppClient)
+            => await PartyService.CreateParty(this, xmppClient);
+        
+        /// <inheritdoc cref="PartyService.GetPartyPings"/>
+        public async Task<List<PartyInfo>> GetPartyPings(string pingerId)
+            => await PartyService.GetPartyPings(this, pingerId);
+        
+        /// <inheritdoc cref="PartyService.GetParty"/>
+        public async Task<PartyInfo> GetParty(string partyId)
+            => await PartyService.GetParty(this, partyId);
+        
+        /// <inheritdoc cref="PartyService.JoinParty"/>
+        public async Task JoinParty(XMPPClient xmppClient, PartyInvite partyInvite)
+            => await PartyService.JoinParty(this, xmppClient, partyInvite);
         
         #endregion
         
