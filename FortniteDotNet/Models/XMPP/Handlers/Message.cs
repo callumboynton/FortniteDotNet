@@ -1,14 +1,16 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.IO;
 using System.Xml;
+using System.Linq;
 using Newtonsoft.Json;
-using System.Threading.Tasks;
-using FortniteDotNet.Models.Party;
-using FortniteDotNet.Models.XMPP.Payloads;
-using FortniteDotNet.Models.XMPP.EventArgs;
-using FortniteDotNet.Services;
 using Newtonsoft.Json.Linq;
+using System.Threading.Tasks;
+using FortniteDotNet.Services;
+using System.Collections.Generic;
+using FortniteDotNet.Models.Party;
+using FortniteDotNet.Models.XMPP.Meta;
+using FortniteDotNet.Models.XMPP.Payloads;
+using PartyJoinInfo = FortniteDotNet.Models.XMPP.Meta.PartyJoinInfo;
 
 namespace FortniteDotNet.Models.XMPP
 {
@@ -19,16 +21,31 @@ namespace FortniteDotNet.Models.XMPP
             switch (document.DocumentElement.GetAttribute("type"))
             {
                 case "chat":
-                    HandleChat(document);
+                    onChatReceived(new(document.DocumentElement));
                     return;
+                case "groupchat":
+                {
+                    if (document.DocumentElement.InnerText == "Welcome! You created new Multi User Chat Room.")
+                        return;
+                    
+                    var from = document.DocumentElement.GetAttribute("from");
+                    if (CurrentParty == null || from.Split("@")[0].Replace("Party-", "") != CurrentParty.Id)
+                        return;
+            
+                    var id = document.DocumentElement.GetAttribute("from").Split("/")[1].Split(":")[1];
+                    var member = CurrentParty.Members.FirstOrDefault(x => x.Id == id);
+                    if (member == null)
+                        return;
+                    
+                    onGroupChatReceived(new(CurrentParty, document.DocumentElement));
+                    return;
+                }
                 case "error":
                 case "headline":
-                case "groupchat":
                     return;
             }
 
             var body = JsonConvert.DeserializeObject<dynamic>(document.DocumentElement.InnerText);
-            Console.WriteLine((string)body.type);
             switch ((string)body.type)
             {
                 case "com.epicgames.friends.core.apiobjects.Friend":
@@ -72,221 +89,322 @@ namespace FortniteDotNet.Models.XMPP
                         throw new InvalidOperationException($"No invite from {(string)body.pinger_id} found!");
                     if (KickedPartyIds.Contains(ping.Id))
                         throw new InvalidOperationException($"Previously kicked from party {ping.Id}!");
+                    
+                    var invite = ping.Invites.FirstOrDefault(x => x.SentBy == (string)body.pinger_id && x.Status == "SENT") ?? new PartyInvite
+                    {
+                        PartyId = ping.Id,
+                        SentBy = (string)body.pinger_id,
+                        Meta = ping.Meta,
+                        SentTo = AuthSession.AccountId,
+                        SentAt = (DateTime)body.sent,
+                        UpdatedAt = (DateTime)body.sent,
+                        ExpiresAt = (DateTime)body.expires,
+                        Status = "SENT"
+                    };
 
-                    var invite = ping.Invites.FirstOrDefault(x => x.SentBy == (string)body.pinger_id && x.Status == "SENT");
-                    onPartyInvite(invite);
+                    onPartyInviteReceived(invite);
                     break;
                 }
                 case "com.epicgames.social.party.notification.v0.MEMBER_JOINED":
                 {
                     if (CurrentParty == null || CurrentParty.Id != (string)body.party_id)
-                        break;
+                        return;
                     
                     var accountId = (string)body.account_id;
-
+                    PartyMember member;
+                    
                     if (accountId == AuthSession.AccountId)
                     {
-                        if (CurrentParty.Members.All(x => x.Id != accountId))
+                        member = CurrentParty.Members.FirstOrDefault(x => x.Id == accountId);
+                        if (member == null)
                         {
-                            var member = new PartyMember
+                            var connection = ((JObject)body.connection).ToObject<PartyMemberConnection>();
+                            member = new PartyMember
                             {
-                                Id = accountId,
+                                Id = (string)body.account_id,
+                                Role = "",
                                 JoinedAt = DateTime.Now,
-                                Revision = 0,
                                 UpdatedAt = DateTime.Now,
-                                Role = "Member",
-                                Meta = PartyMember.SchemaMeta
+                                Revision = 0,
+                                Meta = connection.Meta
                             };
                             
                             CurrentParty.Members.Add(member);
-                            member.UpdateMember(member.Revision);
-                            await PartyService.UpdateMember(AuthSession, member, CurrentParty.Id);
                         }
-                        await SendPresence(new Presence
-                        {
-                            Status = $"Battle Royale Lobby - {CurrentParty.Members.Count} / {CurrentParty.Config["max_size"]}",
-                            IsPlaying = true,
-                            IsJoinable = false,
-                            HasVoiceSupport = false,
-                            SessionId = "",
-                            Properties = new()
-                            {
-                                {
-                                    "party.joininfodata.286331153_j", new Dictionary<string, object>
-                                    {
-                                        { "sourceId", AuthSession.AccountId },
-                                        { "sourceDisplayName", AuthSession.DisplayName },
-                                        { "sourcePlatform", "WIN" },
-                                        { "partyId", CurrentParty.Id },
-                                        { "partyTypeId", 286331153 },
-                                        { "key", "k" },
-                                        { "appId", "Fortnite" },
-                                        { "buildId", "1:3:"},
-                                        { "partyFlags", -2024557306 },
-                                        { "notAcceptingReason", 0 },
-                                        { "pc", CurrentParty.Members.Count }
-                                    }
-                                },
-                                { 
-                                    "FortBasicInfo_j", new Dictionary<string, object>
-                                    {
-                                        { "homeBaseRating", 1 }
-                                    }
-                                },
-                                { "FortLFG_I", 0 },
-                                { "FortPartySize_i", 1 },
-                                { "FortSubGame_i", 1 },
-                                { "InUnjoinableMatch_b", false },
-                                {
-                                    "FortGameplayStats_j", new Dictionary<string, object>
-                                    {
-                                        { "state", "" },
-                                        { "playlist", "None" },
-                                        { "numKills", 0 },
-                                        { "bFellToDeath", false }
-                                    }
-                                },
-                                /*{
-                                    "KairosProfile_j", new Dictionary<string, object>
-                                    {
-                                        { "appInstalled", "init" },
-                                        { "avatar", "CID_028_Athena_Commando_F" },
-                                        { "avatarBackground", "[\"#8EFDE5\", \"#1CBA9E\", \"#034D3F\"]" }
-                                    }
-                                }*/
-                            }                
-                        });
+
+                        await PartyService.UpdateMember(AuthSession, member, CurrentParty.Id);
                     }
                     else
                     {
-                        CurrentParty.Members.Add(new PartyMember
+                        var connection = ((JObject)body.connection).ToObject<PartyMemberConnection>();
+                        member = new PartyMember
                         {
-                            Id = accountId,
+                            Id = (string) body.account_id,
+                            Role = "",
                             JoinedAt = DateTime.Now,
-                            Revision = 0,
                             UpdatedAt = DateTime.Now,
-                            Role = "Member",
-                            Meta = PartyMember.SchemaMeta
-                        });
+                            Revision = 0,
+                            Meta = connection.Meta
+                        };
+                        
+                        CurrentParty.Members.Add(member);
                     }
-
-                    var partyMember = CurrentParty.Members.FirstOrDefault(x => x.Id == accountId);
-                    onPartyMemberJoined(partyMember);
+                    await SendPresence(new Presence(CurrentParty, new()
+                    {
+                        {"party.joininfodata.286331153_j", new PartyJoinInfo(AuthSession.AccountId, AuthSession.DisplayName, CurrentParty.Id, CurrentParty.Members.Count)},
+                        {"FortBasicInfo_j", new FortBasicInfo()},
+                        {"FortLFG_I", "0"},
+                        {"FortPartySize_i", 1},
+                        {"FortSubGame_i", 1},
+                        {"InUnjoinableMatch_b", false},
+                        {"FortGameplayStats_j", new FortGameplayStats()}
+                    }));
                     
-                    /*if (CurrentParty.Members.FirstOrDefault(x => x.Id == accountId).Role == "Leader")
-                        await PartyService.UpdateParty(AuthSession, CurrentParty, new()
-                        {
-                            { "Default:Default:RawSquadAssignments_j", "" }
-                        });*/
-                    break;
-                }
-                case "com.epicgames.social.party.notification.v0.MEMBER_STATE_UPDATED":
-                {
-                    if (CurrentParty == null || CurrentParty.Id != (string)body.party_id)
-                        break;
+                    var me = CurrentParty.Members.FirstOrDefault(x => x.Id == AuthSession.AccountId);
+                    if (me.IsCaptain)
+                        await CurrentParty.UpdateSquadAssignments(AuthSession);
                     
-                    var accountId = (string)body.account_id;
+                    onPartyMemberJoined(member);
                     
-                    var partyMember = CurrentParty.Members.FirstOrDefault(x => x.Id == accountId);
-                    if (partyMember.Equals(default(PartyMember)))
-                        break;
-
-                    var revision = (int)body.revision;
-                    var updated = ((JObject)body.member_state_updated).ToObject<Dictionary<string, object>>();
-                    var deleted = ((JArray)body.member_state_removed).ToObject<List<string>>();
-                    
-                    partyMember.UpdateMember(revision, updated, deleted);
                     break;
                 }
                 case "com.epicgames.social.party.notification.v0.PARTY_UPDATED":
                 {
                     if (CurrentParty == null || CurrentParty.Id != (string)body.party_id)
-                        break;
+                        return;
                     
-                    var revision = (int)body.revision;
                     var config = ((JObject)body).ToObject<Dictionary<string, object>>();
-                    var updated = ((JObject)body.party_state_updated).ToObject<Dictionary<string, object>>();
                     var deleted = ((JArray)body.party_state_removed).ToObject<List<string>>();
-                    
+                    var updated = ((JObject)body.party_state_updated).ToObject<Dictionary<string, object>>();
+                    var revision = (int)body.revision;
+
                     CurrentParty.UpdateParty(revision, config, updated, deleted);
-                    
-                    await SendPresence(new Presence
+                    await SendPresence(new Presence(CurrentParty, new()
                     {
-                        Status = $"Battle Royale Lobby - {CurrentParty.Members.Count} / {CurrentParty.Config["max_size"]}",
-                        IsPlaying = true,
-                        IsJoinable = false,
-                        HasVoiceSupport = false,
-                        SessionId = "",
-                        Properties = new()
-                        {
-                            {
-                                "party.joininfodata.286331153_j", new Dictionary<string, object>
-                                {
-                                    { "sourceId", AuthSession.AccountId },
-                                    { "sourceDisplayName", AuthSession.DisplayName },
-                                    { "sourcePlatform", "WIN" },
-                                    { "partyId", CurrentParty.Id },
-                                    { "partyTypeId", 286331153 },
-                                    { "key", "k" },
-                                    { "appId", "Fortnite" },
-                                    { "buildId", "1:3:"},
-                                    { "partyFlags", -2024557306 },
-                                    { "notAcceptingReason", 0 },
-                                    { "pc", CurrentParty.Members.Count }
-                                }
-                            },
-                            { 
-                                "FortBasicInfo_j", new Dictionary<string, object>
-                                {
-                                    { "homeBaseRating", 1 }
-                                }
-                            },
-                            { "FortLFG_I", 0 },
-                            { "FortPartySize_i", 1 },
-                            { "FortSubGame_i", 1 },
-                            { "InUnjoinableMatch_b", false },
-                            {
-                                "FortGameplayStats_j", new Dictionary<string, object>
-                                {
-                                    { "state", "" },
-                                    { "playlist", "None" },
-                                    { "numKills", 0 },
-                                    { "bFellToDeath", false }
-                                }
-                            },
-                            /*{
-                                "KairosProfile_j", new Dictionary<string, object>
-                                {
-                                    { "appInstalled", "init" },
-                                    { "avatar", "CID_028_Athena_Commando_F" },
-                                    { "avatarBackground", "[\"#8EFDE5\", \"#1CBA9E\", \"#034D3F\"]" }
-                                }
-                            }*/
-                        }                
-                    });
+                        {"party.joininfodata.286331153_j", new PartyJoinInfo(AuthSession.AccountId, AuthSession.DisplayName, CurrentParty.Id, CurrentParty.Members.Count)},
+                        {"FortBasicInfo_j", new FortBasicInfo()},
+                        {"FortLFG_I", "0"},
+                        {"FortPartySize_i", 1},
+                        {"FortSubGame_i", 1},
+                        {"InUnjoinableMatch_b", false},
+                        {"FortGameplayStats_j", new FortGameplayStats()}
+                    }));
+                    onPartyUpdated(new(CurrentParty, updated, deleted));
+                    
+                    break;
+                }
+                case "com.epicgames.social.party.notification.v0.MEMBER_STATE_UPDATED":
+                {
+                    await File.AppendAllTextAsync("C:\\Users\\Darkblade\\Desktop\\state.txt", (string)body.ToString() + "\n\n\n");
+                    
+                    if (CurrentParty == null || CurrentParty.Id != (string)body.party_id)
+                        return;
+                    
+                    var accountId = (string)body.account_id;
+                    
+                    var deleted = ((JArray)body.member_state_removed).ToObject<List<string>>();
+                    var updated = ((JObject)body.member_state_updated).ToObject<Dictionary<string, object>>();
+                    var revision = (int)body.revision;
+
+                    var member = CurrentParty.Members.FirstOrDefault(x => x.Id == accountId);
+                    if (member == null)
+                        return;                  
+                    
+                    member.UpdateMember(revision, updated, deleted);
+                    onPartyMemberUpdated(new(member, updated, deleted));
                     
                     break;
                 }
                 case "com.epicgames.social.party.notification.v0.MEMBER_LEFT":
+                {
+                    if (CurrentParty == null || CurrentParty.Id != (string)body.party_id)
+                        return;
+                    
+                    var accountId = (string)body.account_id;
+                    if (accountId == AuthSession.AccountId)
+                        return;
+
+                    var member = CurrentParty.Members.FirstOrDefault(x => x.Id == accountId);
+                    if (member == null)
+                        return;
+
+                    CurrentParty.Members.Remove(member);
+                    await SendPresence(new Presence(CurrentParty, new()
+                    {
+                        {"party.joininfodata.286331153_j", new PartyJoinInfo(AuthSession.AccountId, AuthSession.DisplayName, CurrentParty.Id, CurrentParty.Members.Count)},
+                        {"FortBasicInfo_j", new FortBasicInfo()},
+                        {"FortLFG_I", "0"},
+                        {"FortPartySize_i", 1},
+                        {"FortSubGame_i", 1},
+                        {"InUnjoinableMatch_b", false},
+                        {"FortGameplayStats_j", new FortGameplayStats()}
+                    }));
+
+                    var me = CurrentParty.Members.FirstOrDefault(x => x.Id == AuthSession.AccountId);
+                    if (me.IsCaptain)
+                        await CurrentParty.UpdateSquadAssignments(AuthSession);
+                    
+                    onPartyMemberLeft(member);
+                    
+                    break;
+                }
                 case "com.epicgames.social.party.notification.v0.MEMBER_EXPIRED":
+                {
+                    if (CurrentParty == null || CurrentParty.Id != (string)body.party_id)
+                        return;
+                    
+                    var accountId = (string)body.account_id;
+                    if (accountId == AuthSession.AccountId)
+                        return;
+
+                    var member = CurrentParty.Members.FirstOrDefault(x => x.Id == accountId);
+                    if (member == null)
+                        return;
+
+                    CurrentParty.Members.Remove(member);
+                    await SendPresence(new Presence(CurrentParty, new()
+                    {
+                        {"party.joininfodata.286331153_j", new PartyJoinInfo(AuthSession.AccountId, AuthSession.DisplayName, CurrentParty.Id, CurrentParty.Members.Count)},
+                        {"FortBasicInfo_j", new FortBasicInfo()},
+                        {"FortLFG_I", "0"},
+                        {"FortPartySize_i", 1},
+                        {"FortSubGame_i", 1},
+                        {"InUnjoinableMatch_b", false},
+                        {"FortGameplayStats_j", new FortGameplayStats()}
+                    }));
+
+                    var me = CurrentParty.Members.FirstOrDefault(x => x.Id == AuthSession.AccountId);
+                    if (me.IsCaptain)
+                        await CurrentParty.UpdateSquadAssignments(AuthSession);
+                    
+                    onPartyMemberExpired(member);
+                    
+                    break;
+                }
                 case "com.epicgames.social.party.notification.v0.MEMBER_KICKED":
+                {
+                    if (CurrentParty == null || CurrentParty.Id != (string)body.party_id)
+                        return;
+                    
+                    var accountId = (string)body.account_id;
+                    if (accountId == AuthSession.AccountId)
+                        return;
+
+                    var member = CurrentParty.Members.FirstOrDefault(x => x.Id == accountId);
+                    if (member == null)
+                        return;
+                    
+                    if (member.Id == AuthSession.AccountId)
+                    {
+                        KickedPartyIds.Add((string)body.party_id);
+                        await PartyService.CreateParty(AuthSession, this);
+                    }
+                    else
+                    {
+                        CurrentParty.Members.Remove(member);
+                        await SendPresence(new Presence(CurrentParty, new()
+                        {
+                            {"party.joininfodata.286331153_j", new PartyJoinInfo(AuthSession.AccountId, AuthSession.DisplayName, CurrentParty.Id, CurrentParty.Members.Count)},
+                            {"FortBasicInfo_j", new FortBasicInfo()},
+                            {"FortLFG_I", "0"},
+                            {"FortPartySize_i", 1},
+                            {"FortSubGame_i", 1},
+                            {"InUnjoinableMatch_b", false},
+                            {"FortGameplayStats_j", new FortGameplayStats()}
+                        }));
+
+                        var me = CurrentParty.Members.FirstOrDefault(x => x.Id == AuthSession.AccountId);
+                        if (me.IsCaptain)
+                            await CurrentParty.UpdateSquadAssignments(AuthSession);
+                    }
+                    onPartyMemberKicked(member);
+
+                    break;
+                }
                 case "com.epicgames.social.party.notification.v0.MEMBER_DISCONNECTED":
+                {
+                    if (CurrentParty == null || CurrentParty.Id != (string)body.party_id)
+                        return;
+                    
+                    var accountId = (string)body.account_id;
+                    if (accountId == AuthSession.AccountId)
+                        return;
+
+                    var member = CurrentParty.Members.FirstOrDefault(x => x.Id == accountId);
+                    if (member == null)
+                        return;
+
+                    CurrentParty.Members.Remove(member);
+                    await SendPresence(new Presence(CurrentParty, new()
+                    {
+                        {"party.joininfodata.286331153_j", new PartyJoinInfo(AuthSession.AccountId, AuthSession.DisplayName, CurrentParty.Id, CurrentParty.Members.Count)},
+                        {"FortBasicInfo_j", new FortBasicInfo()},
+                        {"FortLFG_I", "0"},
+                        {"FortPartySize_i", 1},
+                        {"FortSubGame_i", 1},
+                        {"InUnjoinableMatch_b", false},
+                        {"FortGameplayStats_j", new FortGameplayStats()}
+                    }));
+
+                    var me = CurrentParty.Members.FirstOrDefault(x => x.Id == AuthSession.AccountId);
+                    if (me.IsCaptain)
+                        await CurrentParty.UpdateSquadAssignments(AuthSession);
+                    
+                    onPartyMemberDisconnected(member);
+                    
+                    break;
+                }
                 case "com.epicgames.social.party.notification.v0.MEMBER_NEW_CAPTAIN":
+                {
+                    if (CurrentParty?.Leader == null || CurrentParty.Id != (string)body.party_id)
+                        return;
+
+                    CurrentParty.Leader.Role = "";
+                    
+                    var member = CurrentParty.Members.FirstOrDefault(x => x.Id == (string) body.account_id);
+                    if (member == null)
+                        return;
+
+                    member.Role = "CAPTAIN";
+                    await SendPresence(new Presence(CurrentParty, new()
+                    {
+                        {"party.joininfodata.286331153_j", new PartyJoinInfo(AuthSession.AccountId, AuthSession.DisplayName, CurrentParty.Id, CurrentParty.Members.Count)},
+                        {"FortBasicInfo_j", new FortBasicInfo()},
+                        {"FortLFG_I", "0"},
+                        {"FortPartySize_i", 1},
+                        {"FortSubGame_i", 1},
+                        {"InUnjoinableMatch_b", false},
+                        {"FortGameplayStats_j", new FortGameplayStats()}
+                    }));
+                    
+                    onPartyMemberPromoted(member);
+                    
+                    break;
+                }
                 case "com.epicgames.social.party.notification.v0.MEMBER_REQUIRE_CONFIRMATION":
+                {
+                    if (CurrentParty?.Leader == null || CurrentParty.Id != (string)body.party_id)
+                        return;
+
+                    if (CurrentParty.Leader.Id == AuthSession.AccountId)
+                        await PartyService.ConfirmMember(AuthSession, CurrentParty.Id, (string)body.account_id);
+                        
+                    break;
+                }
                 case "com.epicgames.social.party.notification.v0.INVITE_DECLINED":
+                {
+                    var inviteeId = (string)body.invitee_id;
+                    
+                    var friend = await FriendsService.GetFriend(AuthSession, inviteeId);
+                    if (friend != null)
+                        onPartyInviteDeclined(friend);
+
+                    break;
+                }
                 default:
-                    //Console.WriteLine(body);
+                    Console.WriteLine($"Unknown XMPP message received! {(string)body.type}");
                     break;
             }
-        }
-
-        public void HandleChat(XmlDocument document)
-        {
-            onChatReceived(new ChatEventArgs
-            {
-                From = document.DocumentElement.GetAttribute("from"),
-                Body = document.DocumentElement.InnerText
-            });
         }
     }
 }

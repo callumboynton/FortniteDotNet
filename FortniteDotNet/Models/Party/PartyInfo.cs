@@ -1,10 +1,11 @@
 ﻿using System;
+using System.Linq;
 using Newtonsoft.Json;
 using System.Threading.Tasks;
-using System.Collections.Generic;
-using FortniteDotNet.Enums.Party;
-using FortniteDotNet.Models.Accounts;
 using FortniteDotNet.Services;
+using System.Collections.Generic;
+using FortniteDotNet.Models.Accounts;
+using FortniteDotNet.Models.XMPP.Meta;
 
 namespace FortniteDotNet.Models.Party
 {
@@ -40,6 +41,9 @@ namespace FortniteDotNet.Models.Party
         [JsonProperty("intentions")]
         public object[] Intentions { get; set; }
 
+        [JsonIgnore] 
+        public PartyMember Leader => Members.FirstOrDefault(x => x.Role == "CAPTAIN");
+
         public async Task UpdatePrivacy(OAuthSession oAuthSession, PartyPrivacy partyPrivacy)
         {
             Dictionary<string, object> updated = new();
@@ -47,11 +51,14 @@ namespace FortniteDotNet.Models.Party
 
             if (Meta.ContainsKey("Default:PrivacySettings_j"))
             {
-                updated["Default:PrivacySettings_j"] = Meta["Default:PrivacySettings_j"] = JsonConvert.SerializeObject(new PrivacySettings
+                updated["Default:PrivacySettings_j"] = Meta["Default:PrivacySettings_j"] = JsonConvert.SerializeObject(new
                 {
-                    PartyType = partyPrivacy.PartyType,
-                    OnlyLeaderFriendsCanJoin =  partyPrivacy.OnlyLeaderFriendsCanJoin,
-                    PartyInviteRestriction = partyPrivacy.InviteRestriction
+                    PrivacySettings = new PrivacySettings
+                    {
+                        PartyType = partyPrivacy.PartyType,
+                        OnlyLeaderFriendsCanJoin = partyPrivacy.OnlyLeaderFriendsCanJoin,
+                        PartyInviteRestriction = partyPrivacy.InviteRestriction
+                    }
                 });
             }
 
@@ -79,14 +86,45 @@ namespace FortniteDotNet.Models.Party
             await PartyService.UpdateParty(oAuthSession, this, updated, deleted);
         }
 
-        public void UpdateParty(int revision, Dictionary<string, object> config, Dictionary<string, object> updated = null, List<string> deleted = null)
+        public async Task UpdateSquadAssignments(OAuthSession oAuthSession)
+        {
+            var assignments = new List<SquadAssignment>();
+            var index = 0;
+            
+            assignments.Add(new(oAuthSession.AccountId));
+
+            foreach (var member in Members)
+            {
+                if (member.Id == oAuthSession.AccountId) 
+                    continue;
+                
+                index++;
+                assignments.Add(new(member.Id, index));
+            }
+
+            Meta["Default:RawSquadAssignments_j"] = JsonConvert.SerializeObject(new
+            {
+                RawSquadAssignments = assignments
+            });
+
+            await PartyService.UpdateParty(oAuthSession, this, new()
+            {
+                { 
+                    "Default:RawSquadAssignments_j", JsonConvert.SerializeObject(new
+                    {
+                        RawSquadAssignments = assignments
+                    })
+                }
+            });
+        }
+
+        public void UpdateParty(int revision, Dictionary<string, object> config, Dictionary<string, object> updated = null, IEnumerable<string> deleted = null)
         {
             if (revision > Revision)
                 Revision = revision;
             
             foreach (var deletedMeta in deleted)
                 Meta.Remove(deletedMeta);
-
             foreach (var updatedMeta in updated)
                 Meta[updatedMeta.Key] = updatedMeta.Value.ToString();
 
@@ -95,9 +133,6 @@ namespace FortniteDotNet.Models.Party
             Config["subType"] = config["party_sub_type"];
             Config["type"] = config["party_type"];
             Config["inviteTtl"] = config["invite_ttl_seconds"];
-            
-            if (config.ContainsKey("discoverability"))
-                Config["discoverability"] = config["discoverability"];
         }
     }
 }

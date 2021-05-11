@@ -1,7 +1,5 @@
-﻿using System;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using System.Collections.Generic;
-using FortniteDotNet.Enums.Party;
 using FortniteDotNet.Models.XMPP;
 
 namespace FortniteDotNet.Models.Party
@@ -33,24 +31,24 @@ namespace FortniteDotNet.Models.Party
                     Meta = new()
                     {
                         {"urn:epic:conn:platform_s", "WIN"},
-                        {"urn:epic:conn:type_s", "GAME"}
-                    },
-                    YieldLeadership = false,
-                    ConnectedAt = DateTime.Now,
-                    UpdatedAt = DateTime.Now,
+                        {"urn:epic:conn:type_s", "game"}
+                    }
                 },
                 Meta = new()
                 {
                     {"urn:epic:member:dn_s", xmppClient.AuthSession.DisplayName}
-                },
+                }
             };
             Meta = new()
             {
                 { "urn:epic:cfg:party-type-id_s", "default" },
                 { "urn:epic:cfg:build-id_s", "1:3:" },
                 { "urn:epic:cfg:join-request-action_s", "Manual" },
+                { "urn:epic:cfg:presence-perm_s", "Noone" },
+                { "urn:epic:cfg:invite-perm_s", "Noone" },
                 { "urn:epic:cfg:chat-enabled_b", "true" },
-                { "urn:epic:cfg:can-join_b", "true" }
+                { "urn:epic:cfg:accepting-members_b", "false" },
+                { "urn:epic:cfg:not-accepting-members-reason_i", "0" }
             };
         }
     }

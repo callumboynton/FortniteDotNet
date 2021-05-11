@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 using System.Xml;
 using System.Text;
 using Newtonsoft.Json;
@@ -33,8 +32,28 @@ namespace FortniteDotNet.Models.XMPP
             await writer.FlushAsync().ConfigureAwait(false);
             
             await SendAsync(builder.ToString()).ConfigureAwait(false);
+        }
+
+        public async Task JoinPartyChat()
+        {
+            var builder = new StringBuilder();
+            var writer = XmlWriter.Create(builder, WriterSettings);
+
+            writer.WriteStartElement("presence");
+            writer.WriteAttributeString("to", $"Party-{CurrentParty.Id}@muc.prod.ol.epicgames.com/{AuthSession.DisplayName}:{AuthSession.AccountId}:{Resource}");
+            writer.WriteStartElement("x", "http://jabber.org/protocol/muc");
+            {
+                writer.WriteStartElement("history");
+                {
+                    writer.WriteAttributeString("maxstanzas", "50");
+                }
+            }
+            await writer.WriteEndElementAsync().ConfigureAwait(false);
+            await writer.WriteEndElementAsync().ConfigureAwait(false);
+            await writer.WriteEndElementAsync().ConfigureAwait(false);
+            await writer.FlushAsync().ConfigureAwait(false);
             
-            await File.AppendAllTextAsync("C:/Users/Darkblade/presence.txt", builder + "\n\n");
+            await SendAsync(builder.ToString()).ConfigureAwait(false);
         }
     }
 }

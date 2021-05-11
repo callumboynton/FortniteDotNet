@@ -1,10 +1,11 @@
 ﻿using System;
 using Newtonsoft.Json;
+using FortniteDotNet.Util;
 using System.Threading.Tasks;
 using FortniteDotNet.Services;
 using System.Collections.Generic;
-using FortniteDotNet.Models.Accounts;
-using FortniteDotNet.Models.Common;
+using FortniteDotNet.Models.XMPP;
+using FortniteDotNet.Models.XMPP.Meta;
 
 namespace FortniteDotNet.Models.Party
 {
@@ -31,132 +32,71 @@ namespace FortniteDotNet.Models.Party
         [JsonProperty("role")]
         public string Role { get; set; }
 
-        public void UpdateMember(int revision, Dictionary<string, object> updated = null, List<string> deleted = null)
+        [JsonIgnore] 
+        public bool IsCaptain => Role == "CAPTAIN";
+
+        public void UpdateMember(int revision, Dictionary<string, object> updated = null, IEnumerable<string> deleted = null)
         {
             if (revision > Revision)
                 Revision = revision;
                 
             foreach (var deletedMeta in deleted)
                 Meta.Remove(deletedMeta);
-
             foreach (var updatedMeta in updated)
                 Meta[updatedMeta.Key] = updatedMeta.Value.ToString();
+        }
+
+        public async Task SetEmote(XMPPClient xmppClient, string emote)
+        {
+            try
+            {
+                var cosmetic = await CosmeticHelper.GetCosmeticByName(emote, "AthenaDance");
+
+                if (JsonConvert.DeserializeObject<FrontendEmote>(Meta["Default:FrontendEmote_j"].ToString()).Data.EmoteItemDefinition != "None")
+                {
+                    Meta["Default:FrontendEmote_j"] = new FrontendEmote().ToString();
+                    await PartyService.UpdateMember(xmppClient.AuthSession, this, xmppClient.CurrentParty.Id, new()
+                    {
+                        {"Default:FrontendEmote_j", Meta["Default:FrontendEmote_j"].ToString()}
+                    });
+                }
+
+                Meta["Default:FrontendEmote_j"] = new FrontendEmote(cosmetic.Id, -2).ToString();
+                await PartyService.UpdateMember(xmppClient.AuthSession, this, xmppClient.CurrentParty.Id, new()
+                {
+                    {"Default:FrontendEmote_j", Meta["Default:FrontendEmote_j"].ToString()}
+                });
+                
+                await xmppClient.SendMessage($"Set emote to {cosmetic.Name}", $"Party-{xmppClient.CurrentParty.Id}@muc.prod.ol.epicgames.com", true);
+            }
+            catch (Exception ex)
+            {
+                await xmppClient.SendMessage(ex.Message, $"Party-{xmppClient.CurrentParty.Id}@muc.prod.ol.epicgames.com", true);
+            }
         }
 
         internal static Dictionary<string, object> SchemaMeta
             => new()
             {
-                { "Default:Location_s", "PreLobby" },
-                { "Default:CampaignHero_j", JsonConvert.SerializeObject(new
-                    {
-                        CampaignHero = new
-                        {
-                            heroItemInstanceId = "",
-                            heroType = "FortHeroType'/Game/Athena/Heroes/CID_028_Athena_Commando_F.CID_028_Athena_Commando_F'"
-                        }
-                    }) 
-                },
-                { "Default:MatchmakingLevel_U" , "0" },
-                { "Default:ZoneInstanceId_s", "" },
-                { "Default:HomeBaseVersion_U", "1" },
-                { "Default:HasPreloadedAthena_b", "false" },
-                { "Default:FrontendEmote_j", JsonConvert.SerializeObject(new
-                    {
-                        FrontendEmote = new
-                        {
-                            emoteItemDef = "None",
-                            emoteEKey = "",
-                            emoteSection = -1
-                        }
-                    }) 
-                },
-                { "Default:NumAthenaPlayersLeft_U", "0" },
-                { "Default:Utc:timeStartedMatchAthena_s", "0001-01-01T00:00:00.000Z" },
-                { "Default:GameReadiness_s", "NotReady" },
-                { "Default:HiddenMatchmakingDelayMax_U", "0" },
-                { "Default:ReadyInputType_s", "Count" },
-                { "Default:CurrentInputType_s", "MouseAndKeyboard" },
-                { "Default:AssistedChallengeInfo_j", JsonConvert.SerializeObject(new
-                    {
-                        AssistedChallengeInfo = new
-                        {
-                            questItemDef = "None",
-                            objectivesCompleted = 0
-                        }
-                    })
-                },
-                { "Default:MemberSquadAssignmentRequest_j", JsonConvert.SerializeObject(new
-                    {
-                        MemberSquadAssignmentRequest = new
-                        {
-                            startingAbsoluteIdx = -1,
-                            targetAbsoluteIdx = -1,
-                            swapTargetMemberId = "INVALID",
-                            version = 0
-                        }
-                    })
-                },
-                { "Default:AthenaCosmeticLoadout_j", JsonConvert.SerializeObject(new
-                    {
-                        AthenaCosmeticLoadout = new
-                        {
-                            characterDef = "AthenaCharacterItemDefinition'/Game/Athena/Items/Cosmetics/Characters/CID_028_Athena_Commando_F.CID_028_Athena_Commando_F'",
-                            characterEKey = "",
-                            backpackDef = "None",
-                            backpackEKey = "",
-                            pickaxeDef = "AthenaPickaxeItemDefinition\'/Game/Athena/Items/Cosmetics/Pickaxes/DefaultPickaxe.DefaultPickaxe\'",
-                            pickaxeEKey = "",
-                            contrailDef = "None",
-                            contrailEKey = "",
-                            scratchpad = Array.Empty<object>()
-                        }
-                    })
-                },
-                { "Default:AthenaCosmeticLoadoutVariants_j", JsonConvert.SerializeObject(new
-                    {
-                        AthenaCosmeticLoadoutVariants = new
-                        {
-                            vL = new { }
-                        }
-                    })
-                },
-                { "Default:AthenaBannerInfo_j", JsonConvert.SerializeObject(new
-                    {
-                        AthenaBannerInfo = new
-                        {
-                            bannerIconId = "StandardBanner15",
-                            bannerColorId = "DefaultColor15",
-                            seasonLevel = 1
-                        }
-                    })
-                },
-                { "Default:BattlePassInfo_j", JsonConvert.SerializeObject(new
-                    {
-                        BattlePassInfo = new
-                        {
-                            bHasPurchasedPass = false,
-                            passLevel = 1,
-                            selfBoostXp = 0,
-                            friendBoostXp = 0
-                        }
-                    })
-                },
-                { "Default:Platform_j", JsonConvert.SerializeObject(new
-                    {
-                        Platform = new
-                        {
-                            platformStr = "WIN"
-                        }
-                    })
-                },
-                { "Default:PlatformUniqueId_s", "INVALID" },
-                { "Default:PlatformSessionId_s", "" },
-                { "Default:CrossplayPreference_s", "OptedIn" },
-                { "Default:VoiceChatEnabled_b", "true" },
-                { "Default:VoiceConnectionId_s", "" },
-                { "Default:SpectateAPartyMemberAvailable_b", "false" },
-                { "Default:FeatDefinition_s", "None" },
-                { "Default:VoiceChatStatus_s", "Disabled" }
+                {"Default:Location_s", "PreLobby"},
+                {"Default:CampaignHero_j", new CampaignHero("CID_027_Athena_Commando_F").ToString()},
+                // CampaignInfo
+                {"Default:FrontendEmote_j", new FrontendEmote().ToString()},
+                {"Default:NumAthenaPlayersLeft_U", "0"},
+                {"Default:SpectateAPartyMemberAvailable_b", "false"},
+                {"Default:Utc:timeStartedMatchAthena_s", "0001-01-01T00:00:00.000Z"},
+                {"Default:LobbyState_j", new LobbyState().ToString()},
+                {"Default:AssistedChallengeInfo_j", new AssistedChallengeInfo().ToString()},
+                {"Default:FeatDefinition_s", "None"},
+                {"Default:MemberSquadAssignmentRequest_j", new SquadAssignmentRequest().ToString()},
+                {"Default:VoiceChatStatus_s", "Disabled"},
+                {"Default:SidekickStatus_s", "None"},
+                {"Default:AthenaCosmeticLoadout_j", new AthenaCosmeticLoadout("CID_027_Athena_Commando_F").ToString()},
+                {"Default:AthenaCosmeticLoadoutVariants_j", new AthenaCosmeticLoadoutVariants().ToString()},
+                {"Default:AthenaBannerInfo_j", new AthenaBannerInfo("brseason01", "defaultcolor19", 69).ToString()},
+                {"Default:BattlePassInfo_j", new BattlePassInfo(100, 0, 0).ToString()},
+                {"Default:PlatformData_j", new PlatformMeta().ToString()},
+                {"Default:CrossplayPreference_s", "OptedIn"}
             };
     }
 
@@ -165,16 +105,16 @@ namespace FortniteDotNet.Models.Party
         [JsonProperty("id")]
         public string Id { get; set; }
 
-        [JsonProperty("connected_at")]
+        [JsonProperty("connected_at", NullValueHandling = NullValueHandling.Ignore)]
         public DateTime ConnectedAt { get; set; }
 
-        [JsonProperty("updated_at")]
+        [JsonProperty("updated_at", NullValueHandling = NullValueHandling.Ignore)]
         public DateTime UpdatedAt { get; set; }
 
-        [JsonProperty("yield_leadership")]
+        [JsonProperty("yield_leadership", NullValueHandling = NullValueHandling.Ignore)]
         public bool YieldLeadership { get; set; }
 
         [JsonProperty("meta")]
-        public Dictionary<string, string> Meta { get; set; }
+        public Dictionary<string, object> Meta { get; set; }
     }
 }

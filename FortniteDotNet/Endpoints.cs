@@ -190,8 +190,14 @@
             internal static string Join(string partyId, string accountId)
                 => $"{QueryParty(partyId)}/members/{accountId}/join";
 
+            internal static string Member(string partyId, string accountId)
+                => $"{QueryParty(partyId)}/members/{accountId}";
+            
             internal static string MemberMeta(string partyId, string accountId)
-                => $"{QueryParty(partyId)}/members/{accountId}/meta";
+                => $"{Member(partyId, accountId)}/meta";
+            
+            internal static string ConfirmMember(string partyId, string accountId)
+                => $"{Member(partyId, accountId)}/confirm";
         }
     }
 }

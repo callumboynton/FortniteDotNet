@@ -6,6 +6,6 @@
         Friends,
         FriendsAllowFriendsOfFriends,
         Private,
-        PrivateAllowFriendsOfFriends,
+        PrivateAllowFriendsOfFriends
     }
 }

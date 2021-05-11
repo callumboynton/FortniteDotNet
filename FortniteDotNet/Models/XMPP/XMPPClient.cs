@@ -36,7 +36,7 @@ namespace FortniteDotNet.Models.XMPP
             AuthSession = oAuthSession;
             
             Jid = $"{AuthSession.AccountId}@prod.ol.epicgames.com";
-            Resource = $"V2:Fortnite:WINDOWS::{Guid.NewGuid()}";
+            Resource = $"V2:Fortnite:WIN::{Guid.NewGuid().ToString().Replace("-", "").ToUpper()}";
 
             XmppClient = new ClientWebSocket();
             XmppClient.Options.AddSubProtocol("xmpp");
@@ -135,6 +135,12 @@ namespace FortniteDotNet.Models.XMPP
             => OnChatReceived?.Invoke(this, e);
         
         public delegate void ChatEventHandler(object sender, ChatEventArgs e);
+
+        public event GroupChatEventHandler OnGroupChatReceived;
+        private void onGroupChatReceived(GroupChatEventArgs e)
+            => OnGroupChatReceived?.Invoke(this, e);
+        
+        public delegate void GroupChatEventHandler(object sender, GroupChatEventArgs e);
         
         public event FriendEventHandler OnFriendRequestSent;
         private void onFriendRequestSent(Friend e)
@@ -166,18 +172,55 @@ namespace FortniteDotNet.Models.XMPP
         
         public delegate void BlockListUpdatedEventHandler(object sender, BlockListEntry e);
         
-        public event PartyInviteEventHandler OnPartyInvite;
-        private void onPartyInvite(PartyInvite e)
-            => OnPartyInvite?.Invoke(this, e);
+        public event PartyInviteEventHandler OnPartyInviteReceived;
+        private void onPartyInviteReceived(PartyInvite e)
+            => OnPartyInviteReceived?.Invoke(this, e);
         
         public delegate void PartyInviteEventHandler(object sender, PartyInvite e);
+        
+        public event PartyInviteDeclinedEventHandler OnPartyInviteDeclined;
+        private void onPartyInviteDeclined(Friends.Friend e)
+            => OnPartyInviteDeclined?.Invoke(this, e);
+        
+        public delegate void PartyInviteDeclinedEventHandler(object sender, Friends.Friend e);
+        
+        public event PartyUpdatedEventHandler OnPartyUpdated;
+        private void onPartyUpdated(PartyUpdatedEventArgs e)
+            => OnPartyUpdated?.Invoke(this, e);
+        
+        public delegate void PartyUpdatedEventHandler(object sender, PartyUpdatedEventArgs e);
+        
+        public event PartyMemberUpdatedEventHandler OnPartyMemberUpdated;
+        private void onPartyMemberUpdated(PartyMemberUpdatedEventArgs e)
+            => OnPartyMemberUpdated?.Invoke(this, e);
+        
+        public delegate void PartyMemberUpdatedEventHandler(object sender, PartyMemberUpdatedEventArgs e);
         
         public event PartyMemberEventHandler OnPartyMemberJoined;
         private void onPartyMemberJoined(PartyMember e)
             => OnPartyMemberJoined?.Invoke(this, e);
         
-        public delegate void PartyMemberEventHandler(object sender, PartyMember e);
+        public event PartyMemberEventHandler OnPartyMemberPromoted;
+        private void onPartyMemberPromoted(PartyMember e)
+            => OnPartyMemberPromoted?.Invoke(this, e);
         
+        public event PartyMemberEventHandler OnPartyMemberLeft;
+        private void onPartyMemberLeft(PartyMember e)
+            => OnPartyMemberLeft?.Invoke(this, e);
+
+        public event PartyMemberEventHandler OnPartyMemberExpired;
+        private void onPartyMemberExpired(PartyMember e)
+            => OnPartyMemberExpired?.Invoke(this, e);
+
+        public event PartyMemberEventHandler OnPartyMemberKicked;
+        private void onPartyMemberKicked(PartyMember e)
+            => OnPartyMemberKicked?.Invoke(this, e);
+
+        public event PartyMemberEventHandler OnPartyMemberDisconnected;
+        private void onPartyMemberDisconnected(PartyMember e)
+            => OnPartyMemberDisconnected?.Invoke(this, e);
+        
+        public delegate void PartyMemberEventHandler(object sender, PartyMember e);
         
         #endregion
 

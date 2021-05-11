@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using System.Collections.Generic;
+using FortniteDotNet.Models.Party;
 
 namespace FortniteDotNet.Models.XMPP.Payloads
 {
@@ -31,6 +32,16 @@ namespace FortniteDotNet.Models.XMPP.Payloads
             HasVoiceSupport = false;
             SessionId = "";
             Properties = new();
+        }
+
+        public Presence(PartyInfo partyInfo, Dictionary<string, object> properties)
+        {
+            Status = $"Battle Royale Lobby - {partyInfo.Members.Count} / {partyInfo.Config["max_size"]}";
+            IsPlaying = false;
+            IsJoinable = false;
+            HasVoiceSupport = false;
+            SessionId = "";
+            Properties = properties;
         }
     }
 }

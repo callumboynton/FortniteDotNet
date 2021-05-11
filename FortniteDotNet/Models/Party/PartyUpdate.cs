@@ -5,7 +5,7 @@ namespace FortniteDotNet.Models.Party
 {
     public class PartyUpdate
     {
-        [JsonProperty("config")]
+        [JsonProperty("config", NullValueHandling = NullValueHandling.Ignore)]
         public Dictionary<string, object> Config { get; set; }
 
         [JsonProperty("meta")]
