@@ -195,8 +195,6 @@ namespace FortniteDotNet.Models.XMPP
                 }
                 case "com.epicgames.social.party.notification.v0.MEMBER_STATE_UPDATED":
                 {
-                    await File.AppendAllTextAsync("C:\\Users\\Darkblade\\Desktop\\state.txt", (string)body.ToString() + "\n\n\n");
-                    
                     if (CurrentParty == null || CurrentParty.Id != (string)body.party_id)
                         return;
                     
@@ -402,7 +400,7 @@ namespace FortniteDotNet.Models.XMPP
                     break;
                 }
                 default:
-                    Console.WriteLine($"Unknown XMPP message received! {(string)body.type}");
+                    Console.WriteLine($"Unknown XMPP message received! Type: {(string)body.type}");
                     break;
             }
         }
