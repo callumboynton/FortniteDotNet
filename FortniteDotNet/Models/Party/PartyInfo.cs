@@ -5,7 +5,9 @@ using System.Threading.Tasks;
 using FortniteDotNet.Services;
 using System.Collections.Generic;
 using FortniteDotNet.Models.Accounts;
+using FortniteDotNet.Models.XMPP;
 using FortniteDotNet.Models.XMPP.Meta;
+using FortniteDotNet.Models.XMPP.Payloads;
 
 namespace FortniteDotNet.Models.Party
 {
@@ -133,6 +135,39 @@ namespace FortniteDotNet.Models.Party
             Config["subType"] = config["party_sub_type"];
             Config["type"] = config["party_type"];
             Config["inviteTtl"] = config["invite_ttl_seconds"];
+        }
+
+        public async Task PatchPresence(XMPPClient xmppClient)
+        {
+            object partyJoinInfo;
+            var presencePermission = Meta["urn:epic:cfg:presence-perm_s"];
+
+            if (presencePermission == "Noone" || presencePermission == "Leader" && Leader.Id != xmppClient.AuthSession.AccountId)
+            {
+                partyJoinInfo = new
+                {
+                    bIsPrivate = true
+                };
+            }
+            else
+            {
+                partyJoinInfo = new XMPP.Meta.PartyJoinInfo(
+                    xmppClient.AuthSession.AccountId,
+                    xmppClient.AuthSession.DisplayName,
+                    xmppClient.CurrentParty.Id,
+                    xmppClient.CurrentParty.Members.Count);
+            }
+            
+            await xmppClient.SendPresence(new Presence(this, new()
+            {
+                {"party.joininfodata.286331153_j", partyJoinInfo},
+                {"FortBasicInfo_j", new FortBasicInfo()},
+                {"FortLFG_I", "0"},
+                {"FortPartySize_i", 1},
+                {"FortSubGame_i", 1},
+                {"InUnjoinableMatch_b", false},
+                {"FortGameplayStats_j", new FortGameplayStats()}
+            }));
         }
     }
 }

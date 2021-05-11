@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using FortniteDotNet.Models.XMPP;
@@ -53,6 +54,18 @@ namespace FortniteDotNet.Test
                     {
                         var me = _xmppClient.CurrentParty.Members.FirstOrDefault(x => x.Id == _authSession.AccountId);
                         await me.SetEmote(_xmppClient, content);
+                        break;
+                    }
+                    case "outfit":
+                    {
+                        var me = _xmppClient.CurrentParty.Members.FirstOrDefault(x => x.Id == _authSession.AccountId);
+                        if (content.Contains(":"))
+                        {
+                            await me.SetOutfit(_xmppClient, content.Split(":")[0], content.Split(":")[1]);
+                            break;
+                        }
+
+                        await me.SetOutfit(_xmppClient, content);
                         break;
                     }
                 }

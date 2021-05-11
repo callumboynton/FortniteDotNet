@@ -7,9 +7,9 @@ namespace FortniteDotNet.Models.XMPP.Meta
         [JsonProperty("BattlePassInfo")]
         public BattlePassInfoData Data { get; set; }
 
-        public BattlePassInfo(int passLevel, int selfBoostXp, int friendXpBoost)
+        public BattlePassInfo(bool isPurchased, int passLevel, int selfBoostXp, int friendXpBoost)
         {
-            Data = new BattlePassInfoData(passLevel, selfBoostXp, friendXpBoost);
+            Data = new BattlePassInfoData(isPurchased, passLevel, selfBoostXp, friendXpBoost);
         }
 
         public override string ToString()
@@ -19,7 +19,7 @@ namespace FortniteDotNet.Models.XMPP.Meta
     public class BattlePassInfoData
     {
         [JsonProperty("bHasPurchasedPass")] 
-        public bool HasPurchasedPass => true;
+        public bool HasPurchasedPass { get; set; }
         
         [JsonProperty("passLevel")]
         public int PassLevel { get; set; }
@@ -30,8 +30,9 @@ namespace FortniteDotNet.Models.XMPP.Meta
         [JsonProperty("friendBoostXp")]
         public int FriendXpBoost { get; set; }
 
-        public BattlePassInfoData(int passLevel, int selfBoostXp, int friendXpBoost)
+        public BattlePassInfoData(bool isPurchased, int passLevel, int selfBoostXp, int friendXpBoost)
         {
+            HasPurchasedPass = isPurchased;
             PassLevel = passLevel;
             PersonalXpBoost = selfBoostXp;
             FriendXpBoost = friendXpBoost;

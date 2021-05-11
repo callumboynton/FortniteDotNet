@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 using System.Xml;
 using System.Linq;
 using Newtonsoft.Json;
@@ -8,9 +7,7 @@ using System.Threading.Tasks;
 using FortniteDotNet.Services;
 using System.Collections.Generic;
 using FortniteDotNet.Models.Party;
-using FortniteDotNet.Models.XMPP.Meta;
 using FortniteDotNet.Models.XMPP.Payloads;
-using PartyJoinInfo = FortniteDotNet.Models.XMPP.Meta.PartyJoinInfo;
 
 namespace FortniteDotNet.Models.XMPP
 {
@@ -149,16 +146,8 @@ namespace FortniteDotNet.Models.XMPP
                         
                         CurrentParty.Members.Add(member);
                     }
-                    await SendPresence(new Presence(CurrentParty, new()
-                    {
-                        {"party.joininfodata.286331153_j", new PartyJoinInfo(AuthSession.AccountId, AuthSession.DisplayName, CurrentParty.Id, CurrentParty.Members.Count)},
-                        {"FortBasicInfo_j", new FortBasicInfo()},
-                        {"FortLFG_I", "0"},
-                        {"FortPartySize_i", 1},
-                        {"FortSubGame_i", 1},
-                        {"InUnjoinableMatch_b", false},
-                        {"FortGameplayStats_j", new FortGameplayStats()}
-                    }));
+
+                    await CurrentParty.PatchPresence(this);
                     
                     var me = CurrentParty.Members.FirstOrDefault(x => x.Id == AuthSession.AccountId);
                     if (me.IsCaptain)
@@ -179,16 +168,8 @@ namespace FortniteDotNet.Models.XMPP
                     var revision = (int)body.revision;
 
                     CurrentParty.UpdateParty(revision, config, updated, deleted);
-                    await SendPresence(new Presence(CurrentParty, new()
-                    {
-                        {"party.joininfodata.286331153_j", new PartyJoinInfo(AuthSession.AccountId, AuthSession.DisplayName, CurrentParty.Id, CurrentParty.Members.Count)},
-                        {"FortBasicInfo_j", new FortBasicInfo()},
-                        {"FortLFG_I", "0"},
-                        {"FortPartySize_i", 1},
-                        {"FortSubGame_i", 1},
-                        {"InUnjoinableMatch_b", false},
-                        {"FortGameplayStats_j", new FortGameplayStats()}
-                    }));
+                    await CurrentParty.PatchPresence(this);
+                    
                     onPartyUpdated(new(CurrentParty, updated, deleted));
                     
                     break;
@@ -227,16 +208,7 @@ namespace FortniteDotNet.Models.XMPP
                         return;
 
                     CurrentParty.Members.Remove(member);
-                    await SendPresence(new Presence(CurrentParty, new()
-                    {
-                        {"party.joininfodata.286331153_j", new PartyJoinInfo(AuthSession.AccountId, AuthSession.DisplayName, CurrentParty.Id, CurrentParty.Members.Count)},
-                        {"FortBasicInfo_j", new FortBasicInfo()},
-                        {"FortLFG_I", "0"},
-                        {"FortPartySize_i", 1},
-                        {"FortSubGame_i", 1},
-                        {"InUnjoinableMatch_b", false},
-                        {"FortGameplayStats_j", new FortGameplayStats()}
-                    }));
+                    await CurrentParty.PatchPresence(this);
 
                     var me = CurrentParty.Members.FirstOrDefault(x => x.Id == AuthSession.AccountId);
                     if (me.IsCaptain)
@@ -260,16 +232,7 @@ namespace FortniteDotNet.Models.XMPP
                         return;
 
                     CurrentParty.Members.Remove(member);
-                    await SendPresence(new Presence(CurrentParty, new()
-                    {
-                        {"party.joininfodata.286331153_j", new PartyJoinInfo(AuthSession.AccountId, AuthSession.DisplayName, CurrentParty.Id, CurrentParty.Members.Count)},
-                        {"FortBasicInfo_j", new FortBasicInfo()},
-                        {"FortLFG_I", "0"},
-                        {"FortPartySize_i", 1},
-                        {"FortSubGame_i", 1},
-                        {"InUnjoinableMatch_b", false},
-                        {"FortGameplayStats_j", new FortGameplayStats()}
-                    }));
+                    await CurrentParty.PatchPresence(this);
 
                     var me = CurrentParty.Members.FirstOrDefault(x => x.Id == AuthSession.AccountId);
                     if (me.IsCaptain)
@@ -300,16 +263,7 @@ namespace FortniteDotNet.Models.XMPP
                     else
                     {
                         CurrentParty.Members.Remove(member);
-                        await SendPresence(new Presence(CurrentParty, new()
-                        {
-                            {"party.joininfodata.286331153_j", new PartyJoinInfo(AuthSession.AccountId, AuthSession.DisplayName, CurrentParty.Id, CurrentParty.Members.Count)},
-                            {"FortBasicInfo_j", new FortBasicInfo()},
-                            {"FortLFG_I", "0"},
-                            {"FortPartySize_i", 1},
-                            {"FortSubGame_i", 1},
-                            {"InUnjoinableMatch_b", false},
-                            {"FortGameplayStats_j", new FortGameplayStats()}
-                        }));
+                        await CurrentParty.PatchPresence(this);
 
                         var me = CurrentParty.Members.FirstOrDefault(x => x.Id == AuthSession.AccountId);
                         if (me.IsCaptain)
@@ -333,16 +287,7 @@ namespace FortniteDotNet.Models.XMPP
                         return;
 
                     CurrentParty.Members.Remove(member);
-                    await SendPresence(new Presence(CurrentParty, new()
-                    {
-                        {"party.joininfodata.286331153_j", new PartyJoinInfo(AuthSession.AccountId, AuthSession.DisplayName, CurrentParty.Id, CurrentParty.Members.Count)},
-                        {"FortBasicInfo_j", new FortBasicInfo()},
-                        {"FortLFG_I", "0"},
-                        {"FortPartySize_i", 1},
-                        {"FortSubGame_i", 1},
-                        {"InUnjoinableMatch_b", false},
-                        {"FortGameplayStats_j", new FortGameplayStats()}
-                    }));
+                    await CurrentParty.PatchPresence(this);
 
                     var me = CurrentParty.Members.FirstOrDefault(x => x.Id == AuthSession.AccountId);
                     if (me.IsCaptain)
@@ -364,16 +309,7 @@ namespace FortniteDotNet.Models.XMPP
                         return;
 
                     member.Role = "CAPTAIN";
-                    await SendPresence(new Presence(CurrentParty, new()
-                    {
-                        {"party.joininfodata.286331153_j", new PartyJoinInfo(AuthSession.AccountId, AuthSession.DisplayName, CurrentParty.Id, CurrentParty.Members.Count)},
-                        {"FortBasicInfo_j", new FortBasicInfo()},
-                        {"FortLFG_I", "0"},
-                        {"FortPartySize_i", 1},
-                        {"FortSubGame_i", 1},
-                        {"InUnjoinableMatch_b", false},
-                        {"FortGameplayStats_j", new FortGameplayStats()}
-                    }));
+                    await CurrentParty.PatchPresence(this);
                     
                     onPartyMemberPromoted(member);
                     

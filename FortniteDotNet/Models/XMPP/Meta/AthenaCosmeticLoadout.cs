@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using System;
+using Newtonsoft.Json;
 
 namespace FortniteDotNet.Models.XMPP.Meta
 {
@@ -7,9 +8,9 @@ namespace FortniteDotNet.Models.XMPP.Meta
         [JsonProperty("AthenaCosmeticLoadout")]
         public AthenaCosmeticLoadoutData Data { get; set; }
 
-        public AthenaCosmeticLoadout(string cid = null, string bid = null, string pid = null, params object[] scratchpad)
+        public AthenaCosmeticLoadout(string cid = null, string bid = null, string pid = null)
         {
-            Data = new AthenaCosmeticLoadoutData(cid, bid, pid, scratchpad);
+            Data = new AthenaCosmeticLoadoutData(cid, bid, pid);
         }
         
         public override string ToString()
@@ -41,11 +42,11 @@ namespace FortniteDotNet.Models.XMPP.Meta
 
         [JsonProperty("contrailEKey")] 
         public string ContrailEKey => "";
-        
-        [JsonProperty("scratchpad")]
-        public object[] Scratchpad { get; set; }
 
-        public AthenaCosmeticLoadoutData(string cid = null, string bid = null, string pid = null, params object[] scratchpad)
+        [JsonProperty("scratchpad")] 
+        public object[] Scratchpad => Array.Empty<object>();
+
+        public AthenaCosmeticLoadoutData(string cid = null, string bid = null, string pid = null)
         {
             CharacterItemDefinition = cid == null ? 
                 "/Game/Athena/Items/Cosmetics/Characters/CID_001_Athena_Commando_F_Default.CID_001_Athena_Commando_F_Default" : 
@@ -54,7 +55,6 @@ namespace FortniteDotNet.Models.XMPP.Meta
             PickaxeItemDefinition = pid == null ? 
                 "/Game/Athena/Items/Cosmetics/Pickaxes/DefaultPickaxe.DefaultPickaxe" : 
                 $"/Game/Athena/Items/Cosmetics/Pickaxes/{pid}.{pid}";
-            Scratchpad = scratchpad;
         }
     }
 }

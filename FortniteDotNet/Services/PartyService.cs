@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using FortniteDotNet.Models.XMPP;
 using FortniteDotNet.Models.Party;
+using FortniteDotNet.Models.Common;
 using FortniteDotNet.Models.Accounts;
 
 namespace FortniteDotNet.Services
@@ -134,26 +135,38 @@ namespace FortniteDotNet.Services
                 }
             };
 
-            // Use our request helper to make a POST request.
-            await client.PatchDataAsync(Endpoints.Party.QueryParty(partyInfo.Id),
-                JsonConvert.SerializeObject(new PartyUpdate
-                {
-                    Config = new()
+            start:
+            try
+            {
+                // Use our request helper to make a POST request.
+                await client.PatchDataAsync(Endpoints.Party.QueryParty(partyInfo.Id),
+                    JsonConvert.SerializeObject(new PartyUpdate
                     {
-                        { "join_confirmation", partyInfo.Config["join_confirmation"] },
-                        { "joinability", partyInfo.Config["joinability"] },
-                        { "max_size", partyInfo.Config["max_size"] }
-                    },
-                    Meta = new PartyUpdateMeta
-                    {
-                        Delete = deleted ?? new(),
-                        Update = updated
-                    },
-                    Revision = partyInfo.Revision
-                })).ConfigureAwait(false);
+                        Config = new()
+                        {
+                            {"join_confirmation", partyInfo.Config["join_confirmation"]},
+                            {"joinability", partyInfo.Config["joinability"]},
+                            {"max_size", partyInfo.Config["max_size"]}
+                        },
+                        Meta = new PartyUpdateMeta
+                        {
+                            Delete = deleted ?? new(),
+                            Update = updated
+                        },
+                        Revision = partyInfo.Revision
+                    })).ConfigureAwait(false);
 
-            partyInfo.Revision++;
-            partyInfo.UpdatedAt = DateTime.Now;
+                partyInfo.Revision++;
+                partyInfo.UpdatedAt = DateTime.Now;
+            }
+            catch (EpicException ex)
+            {
+                if (ex.ErrorCode == "errors.com.epicgames.social.party.stale_revision")
+                {
+                    partyInfo.Revision = Convert.ToInt32(ex.MessageVars[1]);
+                    goto start;
+                }
+            }
         }
 
         internal static async Task<List<PartyInfo>> GetPartyPings(OAuthSession oAuthSession, string pingerId)
@@ -186,17 +199,29 @@ namespace FortniteDotNet.Services
                 }
             };
             
-            // Use our request helper to make a POST request.
-            await client.PatchDataAsync(Endpoints.Party.MemberMeta(partyId, oAuthSession.AccountId),
-                JsonConvert.SerializeObject(new PartyMemberUpdate
-                {
-                    Delete = deleted ?? new(),
-                    Update = updated ?? PartyMember.SchemaMeta,
-                    Revision = partyMember.Revision
-                })).ConfigureAwait(false);
+            start:
+            try
+            {
+                // Use our request helper to make a POST request.
+                await client.PatchDataAsync(Endpoints.Party.MemberMeta(partyId, oAuthSession.AccountId),
+                    JsonConvert.SerializeObject(new PartyMemberUpdate
+                    {
+                        Delete = deleted ?? new(),
+                        Update = updated ?? PartyMember.SchemaMeta,
+                        Revision = partyMember.Revision
+                    })).ConfigureAwait(false);
 
-            partyMember.Revision++;
-            partyMember.UpdatedAt = DateTime.Now;
+                partyMember.Revision++;
+                partyMember.UpdatedAt = DateTime.Now;
+            }
+            catch (EpicException ex)
+            {
+                if (ex.ErrorCode == "errors.com.epicgames.social.party.stale_revision")
+                {
+                    partyMember.Revision = Convert.ToInt32(ex.MessageVars[1]);
+                    goto start;
+                }
+            }
         }
         
         internal static async Task ConfirmMember(OAuthSession oAuthSession, string partyId, string memberId)

@@ -7,9 +7,9 @@ namespace FortniteDotNet.Models.XMPP.Meta
         [JsonProperty("FrontendEmote")]
         public FrontendEmoteData Data { get; set; }
 
-        public FrontendEmote(string eid = null, int section = -1)
+        public FrontendEmote(string eid = null, bool isEmoji = false, int section = -1)
         {
-            Data = new FrontendEmoteData(eid, section);
+            Data = new FrontendEmoteData(eid, isEmoji, section);
         }
         
         public override string ToString()
@@ -27,9 +27,11 @@ namespace FortniteDotNet.Models.XMPP.Meta
         [JsonProperty("emoteSection")] 
         public int EmoteSection { get; set; }
 
-        public FrontendEmoteData(string eid = null, int section = -1)
+        public FrontendEmoteData(string eid = null, bool isEmoji = false, int section = -1)
         {
-            EmoteItemDefinition = eid == null ? "None" : $"/Game/Athena/Items/Cosmetics/Dances/{eid}.{eid}";
+            EmoteItemDefinition = eid == null ? "None" : 
+                isEmoji ? $"/Game/Athena/Items/Cosmetics/Dances/Emoji/{eid}.{eid}" : 
+                $"/Game/Athena/Items/Cosmetics/Dances/{eid}.{eid}";
             EmoteSection = section;
         }
     }

@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
+using System.Collections.Generic;
 
 namespace FortniteDotNet.Models.XMPP.Meta
 {
@@ -20,12 +20,12 @@ namespace FortniteDotNet.Models.XMPP.Meta
     public class AthenaCosmeticLoadoutVariantsData
     {
         [JsonProperty("vL")]
-        public object VariantLoadout { get; set; }
+        public Dictionary<string, object> VariantLoadout { get; set; }
 
         public AthenaCosmeticLoadoutVariantsData(string type, string channel = null, string variant = null)
         {
             if (type == null || channel == null || variant == null)
-                VariantLoadout = new { };
+                VariantLoadout = new();
             else
                 VariantLoadout = new Dictionary<string, object>
                 {
