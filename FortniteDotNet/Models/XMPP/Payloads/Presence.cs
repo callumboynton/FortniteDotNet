@@ -26,7 +26,7 @@ namespace FortniteDotNet.Models.XMPP.Payloads
 
         public Presence()
         {
-            Status = "Playing Battle Royale";
+            Status = "";
             IsPlaying = false;
             IsJoinable = false;
             HasVoiceSupport = false;

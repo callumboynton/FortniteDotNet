@@ -262,7 +262,11 @@ namespace FortniteDotNet.Models.Accounts
 
         /// <inheritdoc cref="PartyService.CreateParty"/>
         public async Task<PartyInfo> CreateParty(XMPPClient xmppClient)
-            => await PartyService.CreateParty(this, xmppClient);
+            => await PartyService.CreateParty(xmppClient);
+
+        /// <inheritdoc cref="PartyService.InitParty"/>
+        public async Task InitParty(XMPPClient xmppClient)
+            => await PartyService.InitParty(xmppClient);
         
         /// <inheritdoc cref="PartyService.GetPartyPings"/>
         public async Task<List<PartyInfo>> GetPartyPings(string pingerId)
@@ -271,10 +275,6 @@ namespace FortniteDotNet.Models.Accounts
         /// <inheritdoc cref="PartyService.GetParty"/>
         public async Task<PartyInfo> GetParty(string partyId)
             => await PartyService.GetParty(this, partyId);
-        
-        /// <inheritdoc cref="PartyService.JoinParty"/>
-        public async Task JoinParty(XMPPClient xmppClient, PartyInvite partyInvite)
-            => await PartyService.JoinParty(this, xmppClient, partyInvite);
         
         #endregion
         

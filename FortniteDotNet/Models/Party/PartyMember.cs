@@ -34,7 +34,7 @@ namespace FortniteDotNet.Models.Party
         public string Role { get; set; }
 
         [JsonIgnore] 
-        public bool IsCaptain => Role == "CAPTAIN";
+        public bool IsLeader => Role == "CAPTAIN";
 
         public void UpdateMember(int revision, Dictionary<string, object> updated = null, IEnumerable<string> deleted = null)
         {

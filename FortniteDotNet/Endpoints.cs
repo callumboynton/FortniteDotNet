@@ -198,6 +198,18 @@
             
             internal static string ConfirmMember(string partyId, string accountId)
                 => $"{Member(partyId, accountId)}/confirm";
+
+            internal static string UserPings(string accountId, string pingerId)
+                => $"{BASE_URL}/user/{accountId}/pings/{pingerId}";
+
+            internal static string Summary(string accountId)
+                => $"{BASE_URL}/user/{accountId}";
+
+            internal static string Invite(string partyId, string accountId)
+                => $"{QueryParty(partyId)}/invites/{accountId}?sendPing=true";
+
+            internal static string Promote(string partyId, string accountId)
+                => $"{Member(partyId, accountId)}/promote";
         }
     }
 }

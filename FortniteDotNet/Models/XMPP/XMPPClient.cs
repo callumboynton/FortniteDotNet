@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Xml;
@@ -7,8 +6,9 @@ using System.Text;
 using System.Threading;
 using System.Net.WebSockets;
 using System.Threading.Tasks;
-using FortniteDotNet.Models.Accounts;
+using System.Collections.Generic;
 using FortniteDotNet.Models.Party;
+using FortniteDotNet.Models.Accounts;
 using FortniteDotNet.Models.XMPP.Payloads;
 using FortniteDotNet.Models.XMPP.EventArgs;
 

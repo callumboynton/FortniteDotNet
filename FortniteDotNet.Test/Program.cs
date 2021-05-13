@@ -29,9 +29,8 @@ namespace FortniteDotNet.Test
             
                 Thread.Sleep(1000);
             
-                var party = await _authSession.CreateParty(_xmppClient);
-                await _xmppClient.JoinPartyChat();
-                await party.UpdatePrivacy(_authSession, new PartyPrivacy(Privacy.Public));
+                await _authSession.InitParty(_xmppClient);
+                await _xmppClient.CurrentParty.UpdatePrivacy(_authSession, new PartyPrivacy(Privacy.Public));
 
             }).ConfigureAwait(false).GetAwaiter().GetResult();
         }
@@ -66,6 +65,48 @@ namespace FortniteDotNet.Test
                         }
 
                         await me.SetOutfit(_xmppClient, content);
+                        break;
+                    }
+                    case "backbling":
+                    {
+                        var me = _xmppClient.CurrentParty.Members.FirstOrDefault(x => x.Id == _authSession.AccountId);
+                        if (content.Contains(":"))
+                        {
+                            await me.SetBackpack(_xmppClient, content.Split(":")[0], content.Split(":")[1]);
+                            break;
+                        }
+
+                        await me.SetBackpack(_xmppClient, content);
+                        break;
+                    }
+                    case "pickaxe":
+                    {
+                        var me = _xmppClient.CurrentParty.Members.FirstOrDefault(x => x.Id == _authSession.AccountId);
+                        if (content.Contains(":"))
+                        {
+                            await me.SetPickaxe(_xmppClient, content.Split(":")[0], content.Split(":")[1]);
+                            break;
+                        }
+
+                        await me.SetPickaxe(_xmppClient, content);
+                        break;
+                    }
+                    case "banner":
+                    {
+                        var me = _xmppClient.CurrentParty.Members.FirstOrDefault(x => x.Id == _authSession.AccountId);
+                        await me.SetBanner(_xmppClient, content.Split(":")[0], content.Split(":")[1]);
+                        break;
+                    }
+                    case "emoji":
+                    {
+                        var me = _xmppClient.CurrentParty.Members.FirstOrDefault(x => x.Id == _authSession.AccountId);
+                        await me.SetEmoji(_xmppClient, content);
+                        break;
+                    }
+                    case "level":
+                    {
+                        var me = _xmppClient.CurrentParty.Members.FirstOrDefault(x => x.Id == _authSession.AccountId);
+                        await me.SetLevel(_xmppClient, Convert.ToInt32(content));
                         break;
                     }
                 }

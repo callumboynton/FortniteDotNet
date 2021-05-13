@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net;
+using System.Linq;
 using Newtonsoft.Json;
 using FortniteDotNet.Util;
 using System.Threading.Tasks;
@@ -29,26 +30,35 @@ namespace FortniteDotNet.Services
             return await client.GetDataAsync<PartyInfo>(Endpoints.Party.QueryParty(partyId)).ConfigureAwait(false);
         }
         
-        internal static async Task<PartyInfo> CreateParty(OAuthSession oAuthSession, XMPPClient xmppClient)
+        internal static async Task<PartySummary> GetSummary(OAuthSession oAuthSession)
         {
             // We're using a using statement so that the initialised client is disposed of when the code block is exited.
             using var client = new WebClient
             {
                 Headers =
                 {
-                    // This is so Epic Games' API knows what kind of data we're providing.
-                    [HttpRequestHeader.ContentType] = "application/json",
                     // Set the Authorization header to the access token from the provided OAuthSession.
                     [HttpRequestHeader.Authorization] = $"bearer {oAuthSession.AccessToken}"
                 }
             };
 
-            // Use our request helper to make a POST request.
-            return xmppClient.CurrentParty = await client.PostDataAsync<PartyInfo>(Endpoints.Party.Parties,
-                JsonConvert.SerializeObject(new PartyCreationInfo(xmppClient))).ConfigureAwait(false);
+            // Use our request helper to make a GET request, and return the response data deserialized into the appropriate type.
+            return await client.GetDataAsync<PartySummary>(Endpoints.Party.Summary(oAuthSession.AccountId)).ConfigureAwait(false);
+        }
+
+        internal static async Task InitParty(XMPPClient xmppClient, bool create = true)
+        {
+            var summary = await GetSummary(xmppClient.AuthSession);
+            xmppClient.CurrentParty = summary.Current.FirstOrDefault();
+
+            if (create && xmppClient.CurrentParty != null)
+                await LeaveParty(xmppClient);
+
+            if (xmppClient.CurrentParty == null)
+                await CreateParty(xmppClient);
         }
         
-        internal static async Task JoinParty(OAuthSession oAuthSession, XMPPClient xmppClient, PartyInvite invite)
+        internal static async Task<PartyInfo> CreateParty(XMPPClient xmppClient)
         {
             // We're using a using statement so that the initialised client is disposed of when the code block is exited.
             using var client = new WebClient
@@ -58,67 +68,122 @@ namespace FortniteDotNet.Services
                     // This is so Epic Games' API knows what kind of data we're providing.
                     [HttpRequestHeader.ContentType] = "application/json",
                     // Set the Authorization header to the access token from the provided OAuthSession.
-                    [HttpRequestHeader.Authorization] = $"bearer {oAuthSession.AccessToken}"
+                    [HttpRequestHeader.Authorization] = $"bearer {xmppClient.AuthSession.AccessToken}"
                 }
             };
 
             // Use our request helper to make a POST request.
-            var response = await client.PostDataAsync<PartyJoined>(Endpoints.Party.Join(invite.PartyId, oAuthSession.AccountId),
-                JsonConvert.SerializeObject(new PartyJoinInfo
+            xmppClient.CurrentParty = await client.PostDataAsync<PartyInfo>(Endpoints.Party.Parties,
+                JsonConvert.SerializeObject(new PartyCreationInfo(xmppClient))).ConfigureAwait(false);
+            
+            await xmppClient.JoinPartyChat();
+            
+            return xmppClient.CurrentParty;
+        }
+        
+        internal static async Task JoinParty(XMPPClient xmppClient, PartyInvite invite)
+        {
+            // We're using a using statement so that the initialised client is disposed of when the code block is exited.
+            using var client = new WebClient
+            {
+                Headers =
                 {
-                    Connection = new PartyMemberConnection
+                    // This is so Epic Games' API knows what kind of data we're providing.
+                    [HttpRequestHeader.ContentType] = "application/json",
+                    // Set the Authorization header to the access token from the provided OAuthSession.
+                    [HttpRequestHeader.Authorization] = $"bearer {xmppClient.AuthSession.AccessToken}"
+                }
+            };
+
+            start:
+            try
+            {
+                // Use our request helper to make a POST request.
+                var response = await client.PostDataAsync<PartyJoined>(Endpoints.Party.Join(invite.PartyId, xmppClient.AuthSession.AccountId),
+                    JsonConvert.SerializeObject(new PartyJoinInfo
                     {
-                        Id = xmppClient.Jid,
+                        Connection = new PartyMemberConnection
+                        {
+                            Id = $"{xmppClient.Jid}/{xmppClient.Resource}",
+                            Meta = new()
+                            {
+                                {"urn:epic:conn:platform_s", "WIN"},
+                                {"urn:epic:conn:type_s", "game"}
+                            },
+                            YieldLeadership = false
+                        },
                         Meta = new()
                         {
-                            {"urn:epic:conn:platform_s", "WIN"},
-                            {"urn:epic:conn:type_s", "game"}
-                        },
-                        YieldLeadership = false
-                    },
-                    Meta = new()
-                    {
-                        {"urn:epic:member:dn_s", oAuthSession.DisplayName},
-                        {
-                            "urn:epic:member:joinrequestusers_j", JsonConvert.SerializeObject(new PartyJoinRequest
+                            {"urn:epic:member:dn_s", xmppClient.AuthSession.DisplayName},
                             {
-                                Users = new()
+                                "urn:epic:member:joinrequestusers_j", JsonConvert.SerializeObject(new PartyJoinRequest
                                 {
-                                    new JoinRequestUser
+                                    Users = new()
                                     {
-                                        Id = oAuthSession.AccountId,
-                                        DisplayName = oAuthSession.DisplayName,
-                                        Platform = "WIN",
-                                        Data = new()
+                                        new JoinRequestUser
                                         {
-                                            {"CrossplayReference", "1"},
-                                            {"SubGame_u", "1"}
+                                            Id = xmppClient.AuthSession.AccountId,
+                                            DisplayName = xmppClient.AuthSession.DisplayName,
+                                            Platform = "WIN",
+                                            Data = new()
+                                            {
+                                                {"CrossplayReference", "1"},
+                                                {"SubGame_u", "1"}
+                                            }
                                         }
                                     }
-                                }
-                            })
+                                })
+                            }
                         }
-                    }
-                })).ConfigureAwait(false);
+                    })).ConfigureAwait(false);
 
-            xmppClient.CurrentParty = await GetParty(oAuthSession, response.PartyId);
+                xmppClient.CurrentParty = await GetParty(xmppClient.AuthSession, response.PartyId);
+                await xmppClient.JoinPartyChat();
+            }
+            catch (EpicException ex)
+            {
+                if (ex.ErrorCode != "errors.com.epicgames.social.party.user_has_party")
+                {
+                    await InitParty(xmppClient);
+                    throw;
+                }
+                
+                await InitParty(xmppClient);
+                goto start;
+            }
         }
         
-        internal static async Task LeaveParty(OAuthSession oAuthSession, string partyId, PartyMember partyMember)
+        internal static async Task LeaveParty(XMPPClient xmppClient, bool createNew = false)
         {
+            await xmppClient.LeavePartyChat();
+            
             // We're using a using statement so that the initialised client is disposed of when the code block is exited.
             using var client = new WebClient
             {
                 Headers =
                 {
                     // Set the Authorization header to the access token from the provided OAuthSession.
-                    [HttpRequestHeader.Authorization] = $"bearer {oAuthSession.AccessToken}"
+                    [HttpRequestHeader.Authorization] = $"bearer {xmppClient.AuthSession.AccessToken}"
                 }
             };
+
+            try
+            {
+                // Use our request helper to make a DELETE request.
+                await client.DeleteDataAsync(Endpoints.Party.Member(xmppClient.CurrentParty.Id, xmppClient.AuthSession.AccountId)).ConfigureAwait(false);
+            }
+            catch (EpicException ex)
+            {
+                if (ex.ErrorCode != "errors.com.epicgames.social.party.party_not_found")
+                    throw;
+
+                await InitParty(xmppClient);
+            }
             
-            // Use our request helper to make a DELETE request.
-            await client.DeleteDataAsync(Endpoints.Party.Member(partyId, partyMember.Id)).ConfigureAwait(false);
-            
+            xmppClient.CurrentParty = null;
+
+            if (createNew)
+                await CreateParty(xmppClient);
         }
 
         internal static async Task UpdateParty(OAuthSession oAuthSession, PartyInfo partyInfo, Dictionary<string, object> updated = null, List<string> deleted = null)
@@ -161,28 +226,12 @@ namespace FortniteDotNet.Services
             }
             catch (EpicException ex)
             {
-                if (ex.ErrorCode == "errors.com.epicgames.social.party.stale_revision")
-                {
-                    partyInfo.Revision = Convert.ToInt32(ex.MessageVars[1]);
-                    goto start;
-                }
+                if (ex.ErrorCode != "errors.com.epicgames.social.party.stale_revision")
+                    throw;
+                
+                partyInfo.Revision = Convert.ToInt32(ex.MessageVars[1]);
+                goto start;
             }
-        }
-
-        internal static async Task<List<PartyInfo>> GetPartyPings(OAuthSession oAuthSession, string pingerId)
-        {
-            // We're using a using statement so that the initialised client is disposed of when the code block is exited.
-            using var client = new WebClient
-            {
-                Headers =
-                {
-                    // Set the Authorization header to the access token from the provided OAuthSession.
-                    [HttpRequestHeader.Authorization] = $"bearer {oAuthSession.AccessToken}"
-                }
-            };
-
-            // Use our request helper to make a GET request, and return the response data deserialized into the appropriate type.
-            return await client.GetDataAsync<List<PartyInfo>>(Endpoints.Party.PartyPings(oAuthSession.AccountId, pingerId)).ConfigureAwait(false);
         }
 
         internal static async Task UpdateMember(OAuthSession oAuthSession, PartyMember partyMember, string partyId, Dictionary<string, object> updated = null, List<string> deleted = null)
@@ -216,11 +265,11 @@ namespace FortniteDotNet.Services
             }
             catch (EpicException ex)
             {
-                if (ex.ErrorCode == "errors.com.epicgames.social.party.stale_revision")
-                {
-                    partyMember.Revision = Convert.ToInt32(ex.MessageVars[1]);
-                    goto start;
-                }
+                if (ex.ErrorCode != "errors.com.epicgames.social.party.stale_revision")
+                    throw;
+                
+                partyMember.Revision = Convert.ToInt32(ex.MessageVars[1]);
+                goto start;
             }
         }
         
@@ -238,6 +287,89 @@ namespace FortniteDotNet.Services
 
             // Use our request helper to make a POST request.
             await client.PostDataAsync(Endpoints.Party.ConfirmMember(partyId, memberId), "").ConfigureAwait(false);
+        }
+        
+        internal static async Task<List<PartyInfo>> GetPartyPings(OAuthSession oAuthSession, string pingerId)
+        {
+            // We're using a using statement so that the initialised client is disposed of when the code block is exited.
+            using var client = new WebClient
+            {
+                Headers =
+                {
+                    // Set the Authorization header to the access token from the provided OAuthSession.
+                    [HttpRequestHeader.Authorization] = $"bearer {oAuthSession.AccessToken}"
+                }
+            };
+
+            // Use our request helper to make a GET request, and return the response data deserialized into the appropriate type.
+            return await client.GetDataAsync<List<PartyInfo>>(Endpoints.Party.PartyPings(oAuthSession.AccountId, pingerId)).ConfigureAwait(false);
+        }
+        
+        internal static async Task DeletePingById(OAuthSession oAuthSession, string senderId)
+        {
+            // We're using a using statement so that the initialised client is disposed of when the code block is exited.
+            using var client = new WebClient
+            {
+                Headers =
+                {
+                    // Set the Authorization header to the access token from the provided OAuthSession.
+                    [HttpRequestHeader.Authorization] = $"bearer {oAuthSession.AccessToken}"
+                }
+            };
+
+            // Use our request helper to make a DELETE request, and return the response data deserialized into the appropriate type.
+            await client.DeleteDataAsync(Endpoints.Party.UserPings(oAuthSession.AccountId, senderId)).ConfigureAwait(false);
+        }
+
+        internal static async Task SendInvite(XMPPClient xmppClient, string accountId)
+        {
+            // We're using a using statement so that the initialised client is disposed of when the code block is exited.
+            using var client = new WebClient
+            {
+                Headers =
+                {
+                    // This is so Epic Games' API knows what kind of data we're providing.
+                    [HttpRequestHeader.ContentType] = "application/json",
+                    // Set the Authorization header to the access token from the provided OAuthSession.
+                    [HttpRequestHeader.Authorization] = $"bearer {xmppClient.AuthSession.AccessToken}"
+                }
+            };
+
+            // Use our request helper to make a POST request.
+            await client.PostDataAsync(Endpoints.Party.Invite(xmppClient.CurrentParty.Id, accountId), 
+                JsonConvert.SerializeObject(xmppClient.CurrentParty.Config)).ConfigureAwait(false);
+        }
+
+        public async Task KickMember(XMPPClient xmppClient, PartyMember partyMember)
+        {
+            // We're using a using statement so that the initialised client is disposed of when the code block is exited.
+            using var client = new WebClient
+            {
+                Headers =
+                {
+                    // Set the Authorization header to the access token from the provided OAuthSession.
+                    [HttpRequestHeader.Authorization] = $"bearer {xmppClient.AuthSession.AccessToken}"
+                }
+            };
+
+            // Use our request helper to make a DELETE request.
+            await client.DeleteDataAsync(Endpoints.Party.Member(xmppClient.CurrentParty.Id, partyMember.Id)).ConfigureAwait(false);
+        }
+
+        public async Task PromoteMember(XMPPClient xmppClient, PartyMember partyMember)
+        {
+            // We're using a using statement so that the initialised client is disposed of when the code block is exited.
+            using var client = new WebClient
+            {
+                Headers =
+                {
+                    // Set the Authorization header to the access token from the provided OAuthSession.
+                    [HttpRequestHeader.Authorization] = $"bearer {xmppClient.AuthSession.AccessToken}"
+                }
+            };
+
+            // Use our request helper to make a DELETE request.
+            await client.PostDataAsync(Endpoints.Party.Promote(xmppClient.CurrentParty.Id, partyMember.Id), "").ConfigureAwait(false);
         }
     }
 }

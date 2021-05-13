@@ -13,9 +13,6 @@ namespace FortniteDotNet.Models.Party
 {
     public class PartyInfo
     {
-        [JsonProperty("config")]
-        public Dictionary<string, object> Config { get; set; }
-        
         [JsonProperty("id")]
         public string Id { get; set; }
 
@@ -24,12 +21,15 @@ namespace FortniteDotNet.Models.Party
 
         [JsonProperty("updated_at")]
         public DateTime UpdatedAt { get; set; }
-
-        [JsonProperty("applicants")]
-        public List<string> Applicants { get; set; }
+        
+        [JsonProperty("config")]
+        public Dictionary<string, object> Config { get; set; }
         
         [JsonProperty("members")]
         public List<PartyMember> Members { get; set; }
+
+        [JsonProperty("applicants")]
+        public List<PartyMember> Applicants { get; set; }
 
         [JsonProperty("meta")]
         public Dictionary<string, string> Meta { get; set; }
@@ -45,7 +45,7 @@ namespace FortniteDotNet.Models.Party
 
         [JsonIgnore] 
         public PartyMember Leader => Members.FirstOrDefault(x => x.Role == "CAPTAIN");
-
+        
         public async Task UpdatePrivacy(OAuthSession oAuthSession, PartyPrivacy partyPrivacy)
         {
             Dictionary<string, object> updated = new();
@@ -119,7 +119,7 @@ namespace FortniteDotNet.Models.Party
                 }
             });
         }
-
+        
         public void UpdateParty(int revision, Dictionary<string, object> config, Dictionary<string, object> updated = null, IEnumerable<string> deleted = null)
         {
             if (revision > Revision)
@@ -160,13 +160,13 @@ namespace FortniteDotNet.Models.Party
             
             await xmppClient.SendPresence(new Presence(this, new()
             {
-                {"party.joininfodata.286331153_j", partyJoinInfo},
                 {"FortBasicInfo_j", new FortBasicInfo()},
+                {"FortGameplayStats_j", new FortGameplayStats()},
                 {"FortLFG_I", "0"},
                 {"FortPartySize_i", 1},
                 {"FortSubGame_i", 1},
                 {"InUnjoinableMatch_b", false},
-                {"FortGameplayStats_j", new FortGameplayStats()}
+                {"party.joininfodata.286331153_j", partyJoinInfo}
             }));
         }
     }

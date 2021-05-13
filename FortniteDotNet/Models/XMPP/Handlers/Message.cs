@@ -136,7 +136,7 @@ namespace FortniteDotNet.Models.XMPP
                         var connection = ((JObject)body.connection).ToObject<PartyMemberConnection>();
                         member = new PartyMember
                         {
-                            Id = (string) body.account_id,
+                            Id = (string)body.account_id,
                             Role = "",
                             JoinedAt = DateTime.Now,
                             UpdatedAt = DateTime.Now,
@@ -150,7 +150,7 @@ namespace FortniteDotNet.Models.XMPP
                     await CurrentParty.PatchPresence(this);
                     
                     var me = CurrentParty.Members.FirstOrDefault(x => x.Id == AuthSession.AccountId);
-                    if (me.IsCaptain)
+                    if (me.IsLeader)
                         await CurrentParty.UpdateSquadAssignments(AuthSession);
                     
                     onPartyMemberJoined(member);
@@ -211,7 +211,7 @@ namespace FortniteDotNet.Models.XMPP
                     await CurrentParty.PatchPresence(this);
 
                     var me = CurrentParty.Members.FirstOrDefault(x => x.Id == AuthSession.AccountId);
-                    if (me.IsCaptain)
+                    if (me.IsLeader)
                         await CurrentParty.UpdateSquadAssignments(AuthSession);
                     
                     onPartyMemberLeft(member);
@@ -235,7 +235,7 @@ namespace FortniteDotNet.Models.XMPP
                     await CurrentParty.PatchPresence(this);
 
                     var me = CurrentParty.Members.FirstOrDefault(x => x.Id == AuthSession.AccountId);
-                    if (me.IsCaptain)
+                    if (me.IsLeader)
                         await CurrentParty.UpdateSquadAssignments(AuthSession);
                     
                     onPartyMemberExpired(member);
@@ -246,27 +246,26 @@ namespace FortniteDotNet.Models.XMPP
                 {
                     if (CurrentParty == null || CurrentParty.Id != (string)body.party_id)
                         return;
-                    
-                    var accountId = (string)body.account_id;
-                    if (accountId == AuthSession.AccountId)
-                        return;
 
+                    var accountId = (string) body.account_id;
                     var member = CurrentParty.Members.FirstOrDefault(x => x.Id == accountId);
-                    if (member == null)
-                        return;
                     
-                    if (member.Id == AuthSession.AccountId)
+                    if (accountId == AuthSession.AccountId)
                     {
                         KickedPartyIds.Add((string)body.party_id);
-                        await PartyService.CreateParty(AuthSession, this);
+                        CurrentParty = null;
+                        await PartyService.InitParty(this);
                     }
                     else
                     {
+                        if (member == null)
+                            return;
+                        
                         CurrentParty.Members.Remove(member);
                         await CurrentParty.PatchPresence(this);
 
                         var me = CurrentParty.Members.FirstOrDefault(x => x.Id == AuthSession.AccountId);
-                        if (me.IsCaptain)
+                        if (me.IsLeader)
                             await CurrentParty.UpdateSquadAssignments(AuthSession);
                     }
                     onPartyMemberKicked(member);
@@ -290,7 +289,7 @@ namespace FortniteDotNet.Models.XMPP
                     await CurrentParty.PatchPresence(this);
 
                     var me = CurrentParty.Members.FirstOrDefault(x => x.Id == AuthSession.AccountId);
-                    if (me.IsCaptain)
+                    if (me.IsLeader)
                         await CurrentParty.UpdateSquadAssignments(AuthSession);
                     
                     onPartyMemberDisconnected(member);
