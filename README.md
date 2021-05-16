@@ -3,9 +3,15 @@
 </p>
 <p align="center">FortniteDotNet is a simple and easy-to-use library used for interacting with Fortnite's HTTP and XMPP services. Features include interactions with parties and friends, general API data, and more.</p>
 <p align="center">
-    <img alt="Stars" src="https://img.shields.io/github/stars/DarkbladeEU/FortniteDotNet">
-    <img alt="Issues" src="https://img.shields.io/github/issues/DarkbladeEU/FortniteDotNet">
-    <img alt="License" src="https://img.shields.io/github/license/DarkbladeEU/FortniteDotNet">
+    <a href="https://github.com/DarkbladeEU/FortniteDotNet/stargazers">
+    	<img alt="Stars" src="https://img.shields.io/github/stars/DarkbladeEU/FortniteDotNet" >
+    </a>
+    <a href="https://github.com/DarkbladeEU/FortniteDotNet/issues">
+    	<img alt="Issues" src="https://img.shields.io/github/stars/DarkbladeEU/FortniteDotNet" >
+    </a>
+    <a href="https://github.com/DarkbladeEU/FortniteDotNet/blob/master/LICENSE">
+    	<img alt="License" src="https://img.shields.io/github/license/DarkbladeEU/FortniteDotNet" >
+    </a>
 </p>
 
 ## Example
