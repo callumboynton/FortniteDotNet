@@ -118,11 +118,13 @@ internal class Program
 }
 ```
 
+## Quick Note
+FortniteDotNet is finished in terms of what I wanted to do, however, there are a lot of MCP commands that are missing from the FortniteService. I don't plan to add these for a while, if at all, however you're more than welcome to create a pull request implementing these commands along with their payloads. The code structure is organised so should be easy to understand, however if you struggle, refer to contacting me below.
+
 ## Contact
 For any queries regarding FortniteDotNet, you can reach out to me on the following platforms:
 
-Email: <a href="mailto:me@darkblade.dev">me@darkblade.dev</a>
+- Email: <a href="mailto:me@darkblade.dev">me@darkblade.dev</a>
+- Twitter: <a href="https://twitter.com/DarkbladeEU">@DarkbladeEU</a>
 
-Twitter: <a href="https://twitter.com/DarkbladeEU">@DarkbladeEU</a>
-
-Or, you can open an issue and I will happily reply to the thread.
+Alternatively, you can open an issue or a pull request, and I will happily reply to the thread.
