@@ -2,28 +2,26 @@
 
     <PropertyGroup>
         <TargetFramework>net5.0</TargetFramework>
-            <TargetFrameworks>netstandard2.1;net452;net472;net48;netcoreapp3.1;net5.0</TargetFrameworks>
-			<RootNamespace>Fortnite_API</RootNamespace>
-			<Description>FortniteDotNet is a simple and easy-to-use library used for interacting with Fortnite's HTTP and XMPP services. Features include interactions with parties and friends, general API data, and more. You can find it on GitHub here.</Description>
-			<PackageId>FortniteDotNet</PackageId>
-			<Product>FortniteDotNet</Product>
-			<PackageProjectUrl>https://darkblade.dev</PackageProjectUrl>
-			<RepositoryUrl>https://github.com/DarkbladeEU/FortniteDotNet</RepositoryUrl>
-			<NeutralLanguage>en</NeutralLanguage>
-			<PackageTags>fortnite</PackageTags>
-			<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-			<PackageLicenseExpression></PackageLicenseExpression>
-			<Authors>DarkbladeEU</Authors>
-			<PackageLicenseFile>LICENSE</PackageLicenseFile>
-			<Version>1.0.0</Version>
-			<Company>FortniteDotNet</Company>
-			<PackageIconUrl></PackageIconUrl>
-			<RepositoryType>git</RepositoryType>
-			<Copyright>Copyright (c) 2021 Darkblade</Copyright>
-			<AssemblyVersion>1.0.0.0</AssemblyVersion>
-			<FileVersion>1.0.0.0</FileVersion>
-			<PackageIcon>logo.png</PackageIcon>
-			<PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+		<RootNamespace>FortniteDotNet</RootNamespace>
+		<Description>FortniteDotNet is a simple and easy-to-use library used for interacting with Fortnite's HTTP and XMPP services. Features include interactions with parties and friends, general API data, and more. You can find it on GitHub here.</Description>
+		<PackageId>FortniteDotNet</PackageId>
+		<Product>FortniteDotNet</Product>
+		<PackageProjectUrl>https://darkblade.dev</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/DarkbladeEU/FortniteDotNet</RepositoryUrl>
+		<NeutralLanguage>en</NeutralLanguage>
+		<PackageTags>fortnite</PackageTags>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<PackageLicenseExpression></PackageLicenseExpression>
+		<Authors>DarkbladeEU</Authors>
+		<PackageLicenseFile>LICENSE</PackageLicenseFile>
+		<Version>1.0.0</Version>
+		<Company>FortniteDotNet</Company>
+		<PackageIconUrl></PackageIconUrl>
+		<RepositoryType>git</RepositoryType>
+		<Copyright>Copyright (c) 2021 Darkblade</Copyright>
+		<AssemblyVersion>1.0.0.0</AssemblyVersion>
+		<FileVersion>1.0.0.0</FileVersion>
+		<PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     </PropertyGroup>
 
     <ItemGroup>
