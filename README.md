@@ -1,9 +1,18 @@
+<div align="center">
+
 <p align="center">
     <img align="center" src="https://i.ibb.co/3cwrNSJ/Fortnite-Dot-Net.png" alt="Background">
 </p>
 <p align="center">FortniteDotNet is a simple and easy-to-use library used for interacting with Fortnite's HTTP and XMPP services. Features include interactions with parties and friends, general API data, and more.</p>
-<div align="center">
-[![GitHub Releases](https://img.shields.io/github/v/release/DarkbladeEU/FortniteDotNet?logo=github)](https://github.com/DarkbladeEU/FortniteDotNet/releases/latest)[![NuGet Release](https://img.shields.io/nuget/v/FortniteDotNet?logo=nuget)](https://www.nuget.org/packages/FortniteDotNet)[![NuGet Downloads](https://img.shields.io/nuget/dt/FortniteDotNet?logo=nuget)](https://www.nuget.org/packages/FortniteDotNet)[![GitHub Issues](https://img.shields.io/github/issues/DarkbladeEU/FortniteDotNet?logo=github)](https://github.com/DarkbladeEU/FortniteDotNet/issues)[![GitHub Forks](https://img.shields.io/github/forks/DarkbladeEU/FortniteDotNet?logo=github)](https://github.com/DarkbladeEU/FortniteDotNet/forks)[![GitHub Stars](https://img.shields.io/github/stars/DarkbladeEU/FortniteDotNet?logo=github)](https://github.com/DarkbladeEU/FortniteDotNet/stargazers)[![GitHub License](https://img.shields.io/github/license/DarkbladeEU/FortniteDotNet)](https://github.com/DarkbladeEU/FortniteDotNet/blob/master/LICENSE)
+
+[![GitHub Releases](https://img.shields.io/github/v/release/DarkbladeEU/FortniteDotNet?logo=github)](https://github.com/DarkbladeEU/FortniteDotNet/releases/latest)
+[![NuGet Release](https://img.shields.io/nuget/v/FortniteDotNet?logo=nuget)](https://www.nuget.org/packages/FortniteDotNet)
+[![NuGet Downloads](https://img.shields.io/nuget/dt/FortniteDotNet?logo=nuget)](https://www.nuget.org/packages/FortniteDotNet)
+[![GitHub Issues](https://img.shields.io/github/issues/DarkbladeEU/FortniteDotNet?logo=github)](https://github.com/DarkbladeEU/FortniteDotNet/issues)
+[![GitHub Forks](https://img.shields.io/github/forks/DarkbladeEU/FortniteDotNet?logo=github)](https://github.com/DarkbladeEU/FortniteDotNet/forks)
+[![GitHub Stars](https://img.shields.io/github/stars/DarkbladeEU/FortniteDotNet?logo=github)](https://github.com/DarkbladeEU/FortniteDotNet/stargazers)
+[![GitHub License](https://img.shields.io/github/license/DarkbladeEU/FortniteDotNet)](https://github.com/DarkbladeEU/FortniteDotNet/blob/master/LICENSE)
+
 </div>
 
 ## Example
