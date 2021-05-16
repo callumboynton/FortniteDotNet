@@ -8,6 +8,7 @@ namespace FortniteDotNet
         public ChannelsService ChannelsService { get; }
         public EventsService EventsService { get; }
         public FortniteService FortniteService { get; }
+        public FriendsService FriendsService { get; }
         public PartyService PartyService { get; }
         
         public FortniteApi()
@@ -16,6 +17,7 @@ namespace FortniteDotNet
             ChannelsService = new();
             EventsService = new();
             FortniteService = new();
+            FriendsService = new();
             PartyService = new();
         }
     }

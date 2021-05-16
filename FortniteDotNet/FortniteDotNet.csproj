@@ -11,12 +11,10 @@
 		<NeutralLanguage>en</NeutralLanguage>
 		<PackageTags>fortnite</PackageTags>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-		<PackageLicenseExpression></PackageLicenseExpression>
 		<Authors>DarkbladeEU</Authors>
 		<PackageLicenseFile>LICENSE</PackageLicenseFile>
 		<Version>1.0.0</Version>
 		<Company>FortniteDotNet</Company>
-		<PackageIconUrl></PackageIconUrl>
 		<RepositoryType>git</RepositoryType>
 		<Copyright>Copyright (c) 2021 Darkblade</Copyright>
 		<AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -27,12 +25,10 @@
     <ItemGroup>
       <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     </ItemGroup>
-
-    <ItemGroup>
-      <None Include="..\LICENSE">
-        <Pack>True</Pack>
-        <PackagePath></PackagePath>
-      </None>
-    </ItemGroup>
-
+	<ItemGroup>
+		<None Include="..\LICENSE">
+			<Pack>True</Pack>
+			<PackagePath></PackagePath>
+		</None>
+	</ItemGroup>
 </Project>

@@ -72,7 +72,8 @@ namespace FortniteDotNet.Services
                 await LeaveParty(xmppClient);
 
             // Create the party.
-            await CreateParty(xmppClient);
+            if (xmppClient.CurrentParty == null)
+                await CreateParty(xmppClient);
         }
         
         /// <summary>
@@ -150,6 +151,10 @@ namespace FortniteDotNet.Services
             }
         }
         
+        /// <summary>
+        /// Leaves the current party of the provided <see cref="XMPPClient"/>.
+        /// </summary>
+        /// <param name="xmppClient">The <see cref="XMPPClient"/> to leave the party from.</param>
         internal static async Task LeaveParty(XMPPClient xmppClient)
         {
             // Leave the party chat.
@@ -169,6 +174,7 @@ namespace FortniteDotNet.Services
             {
                 // Use our request helper to make a DELETE request.
                 await client.DeleteDataAsync(Endpoints.Party.Member(xmppClient.CurrentParty.Id, xmppClient.AuthSession.AccountId)).ConfigureAwait(false);
+                xmppClient.CurrentParty = null;
             }
             catch (EpicException ex)
             {

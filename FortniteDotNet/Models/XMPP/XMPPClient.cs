@@ -61,6 +61,7 @@ namespace FortniteDotNet.Models.XMPP
         {
             await XmppClient.ConnectAsync(new Uri("wss://xmpp-service-prod.ol.epicgames.com//"), CancellationToken.None);
             await SendOpen();
+            onReady();
             await HandleMessages();
         }
         
@@ -141,6 +142,10 @@ namespace FortniteDotNet.Models.XMPP
             => await XmppClient.SendAsync(new(Encoding.UTF8.GetBytes(data)), WebSocketMessageType.Text, true, CancellationToken.None);        
 
         #region Event Handlers
+        
+        public event EventHandler OnReady;
+        public void onReady()
+            => OnReady?.Invoke(this, new());
         
         public event MessageEventHandler OnMessageReceived;
         private void onMessageReceived(MessageEventArgs e)

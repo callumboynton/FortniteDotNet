@@ -94,10 +94,40 @@ namespace FortniteDotNet.Models.Party
         }
 
         /// <summary>
+        /// Sets the custom matchmaking key for the current party with the provided key.
+        /// </summary>
+        /// <param name="oAuthSession">The <see cref="OAuthSession"/> to use for authentication.</param>
+        /// <param name="key">The desired custom matchmaking key.</param>
+        public async Task SetCustomMatchmakingKey(OAuthSession oAuthSession, string key = null)
+        {
+            Meta["Default:CustomMatchKey_s"] = key ?? "";
+
+            await PartyService.UpdateParty(oAuthSession, this, new()
+            {
+                {"Default:CustomMatchKey_s", Meta["Default:CustomMatchKey_s"]}
+            });
+        }
+
+        /// <summary>
+        /// Sets the playlist for the current party with the provided playlist ID.
+        /// </summary>
+        /// <param name="oAuthSession">The <see cref="OAuthSession"/> to use for authentication.</param>
+        /// <param name="playlistId">The playlist ID of the desired playlist.</param>
+        public async Task SetPlaylist(OAuthSession oAuthSession, string playlistId)
+        {
+            Meta["Default:PlaylistData_j"] = new PlaylistDataMeta(playlistId).ToString();
+
+            await PartyService.UpdateParty(oAuthSession, this, new()
+            {
+                {"Default:PlaylistData_j", Meta["Default:PlaylistData_j"]}
+            });
+        }
+
+        /// <summary>
         /// This updates the parties squad assignments, mainly used when a member joins or leaves.
         /// </summary>
         /// <param name="oAuthSession">The <see cref="OAuthSession"/> to use for authentication.</param>
-        public async Task UpdateSquadAssignments(OAuthSession oAuthSession)
+        internal async Task UpdateSquadAssignments(OAuthSession oAuthSession)
         {
             // Initialise our variables
             var assignments = new List<RawSquadAssignment>();
@@ -135,7 +165,7 @@ namespace FortniteDotNet.Models.Party
         /// <param name="config">The current config for the party.</param>
         /// <param name="updated">The updated party meta.</param>
         /// <param name="deleted">The deleted party meta.</param>
-        public void UpdateParty(int revision, Dictionary<string, object> config, Dictionary<string, object> updated = null, IEnumerable<string> deleted = null)
+        internal void UpdateParty(int revision, Dictionary<string, object> config, Dictionary<string, object> updated = null, IEnumerable<string> deleted = null)
         {
             if (revision > Revision)
                 Revision = revision;
@@ -156,7 +186,7 @@ namespace FortniteDotNet.Models.Party
         /// This updates the presence for the provided <see cref="XMPPClient"/> based on the current party's privacy.
         /// </summary>
         /// <param name="xmppClient">The <see cref="XMPPClient"/> to update the presence for.</param>
-        public async Task UpdatePresence(XMPPClient xmppClient)
+        internal async Task UpdatePresence(XMPPClient xmppClient)
         {
             object partyJoinInfo;
             var presencePermission = Meta["urn:epic:cfg:presence-perm_s"];
@@ -190,5 +220,9 @@ namespace FortniteDotNet.Models.Party
                 {"party.joininfodata.286331153_j", partyJoinInfo}
             }));
         }
+
+        /// <inheritdoc cref="PartyService.LeaveParty"/>
+        public async Task Leave(XMPPClient xmppClient)
+            => await PartyService.LeaveParty(xmppClient);
     }
 }
