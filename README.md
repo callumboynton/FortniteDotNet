@@ -42,7 +42,7 @@ internal class Program
             _authSession = await _api.AccountService.GenerateOAuthSession(GrantType.DeviceAuth, AuthClient.iOS, new() 
             {
                 {"device_id", ""}, 
-	        {"account_id", ""}
+	        {"account_id", ""},
 	        {"secret", ""}
             });
 
