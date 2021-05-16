@@ -10,114 +10,102 @@
 
 ## Example
 The below code demonstrates how you could use the XMPP feature of FortniteDotNet to create a lobby bot that updates the client upon commands sent in party chat.
+I've commented the example code so you can have some sort of understanding of what it's doing. Please also note that this is just an example, and there's plenty more that you can do with FortniteDotNet, however I won't be going into full depths until I create documentation for it.
 
 ```cs
 internal class Program 
 {
-   private static FortniteApi _api;
+    private static FortniteApi _api;
 
-   private static XMPPClient _xmppClient;
-   private static OAuthSession _authSession;
+    // We use fields so we can access these in the Xmpp method.
+    private static XMPPClient _xmppClient;
+    private static OAuthSession _authSession;
 
-   private static void Main() 
-   {
-      _api = new FortniteApi();
-      Task.Run(async () => 
-      {
-         _authSession = await _api.AccountService.GenerateOAuthSession(GrantType.DeviceAuth, AuthClient.iOS, new() 
-	 {
-            {"device_id", ""}, 
-	    {"account_id", ""}
-	    {"secret", ""}
-         });
+    private static void Main() 
+    {
+        _api = new FortniteApi();
+        Task.Run(async () => 
+        {
+            // Creates an OAuth session for the iOS client using the device_auth grant type.
+            _authSession = await _api.AccountService.GenerateOAuthSession(GrantType.DeviceAuth, AuthClient.iOS, new() 
+            {
+                {"device_id", ""}, 
+	        {"account_id", ""}
+	        {"secret", ""}
+            });
 
-         new Thread(Xmpp).Start();
+            // Starts XMPP-related operations on a new thread.
+            new Thread(Xmpp).Start();
 
-         await _authSession.InitParty(_xmppClient);
-         await _xmppClient.CurrentParty.UpdatePrivacy(_authSession, new PartyPrivacy(Privacy.Public));
+            // Creates a party for the XMPP client using the OAuth session we generated earlier.
+            await _authSession.InitParty(_xmppClient);
+            
+            // Updates the XMPP client's current party privacy to public using the OAuth session we generated earlier.
+            await _xmppClient.CurrentParty.UpdatePrivacy(_authSession, new PartyPrivacy(Privacy.Public));
 
-      }).ConfigureAwait(false).GetAwaiter().GetResult();
-   }
+        }).ConfigureAwait(false).GetAwaiter().GetResult();
+    }
 
-   private static void Xmpp() 
-   {
-      _xmppClient = new XMPPClient(_authSession);
-      _xmppClient.OnGroupChatReceived += async (_, chat) => 
-      {
-         if (!chat.Body.StartsWith("!"))
-            return;
+    private static void Xmpp() 
+    {
+        // Sets up the XMPP client.
+        _xmppClient = new XMPPClient(_authSession);
+        
+        // We're using the OnGroupChatReceived event handler to listen for any messages sent in the chat of the client's current party.
+        _xmppClient.OnGroupChatReceived += async (_, chat) => 
+        {
+            // If the body doesn't start with !, return.
+            if (!chat.Body.StartsWith("!"))
+                return;
 
-         var args = chat.Body.Remove(0, 1).Split(" ");
-         var command = args.FirstOrDefault();
-         var content = string.Join(" ", args.Skip(1));
-
-         switch (command) 
-         {
-             case "emote": 
-             {
-                var me = _xmppClient.CurrentParty.Members.FirstOrDefault(x => x.Id == _authSession.AccountId);
-                await me.SetEmote(_xmppClient, content);
-                break;
-             }
-             case "outfit": 
-             {
-                var me = _xmppClient.CurrentParty.Members.FirstOrDefault(x => x.Id == _authSession.AccountId);
-                if (content.Contains(":")) 
+            // Get the arguments by removing the ! and splitting the body by a space.
+            var args = chat.Body.Remove(0, 1).Split(" ");
+	    
+            // Get the command (the first argument)
+            var command = args.FirstOrDefault();
+	    
+            // Get the content (every string after the argument)
+            var content = string.Join(" ", args.Skip(1));
+            
+            // Get the client from the list of its current party's members.
+            var me = _xmppClient.CurrentParty.Members.FirstOrDefault(x => x.Id == _authSession.AccountId);
+            
+            // Use a switch case on the command (this is better practice than if, else etc.)
+            switch (command) 
+            {
+                // If the command is emote...
+                case "emote": 
                 {
-                   await me.SetOutfit(_xmppClient, content.Split(":")[0], content.Split(":")[1]);
-                   break;
+                    // Set the client's emote to the content variable. Example: "!emote floss" would set the client's emote to Floss.
+                    await me.SetEmote(_xmppClient, content);
+                    break;
                 }
-    
-                await me.SetOutfit(_xmppClient, content);
-                break;
-             }
-             case "backbling":
-             {
-                var me = _xmppClient.CurrentParty.Members.FirstOrDefault(x => x.Id == _authSession.AccountId);
-                if (content.Contains(":")) 
+                case "outfit": 
                 {
-                   await me.SetBackpack(_xmppClient, content.Split(":")[0], content.Split(":")[1]);
-                   break;
-                }
+                    // If the content contains :, this implies the user wants to apply a variant.
+                    if (content.Contains(":")) 
+                    {
+                        // The SetOutfit method has an optional parameter, which we're using here. Example: "!outfit Skull Trooper:Purple Glow" would set the client's outfit to Skull Trooper, and the outfit's active variant to the Purple Glow variant.
+                        await me.SetOutfit(_xmppClient, content.Split(":")[0], content.Split(":")[1]);
+                        break;
+                    }
     
-                await me.SetBackpack(_xmppClient, content);
-                break;
-             }
-             case "pickaxe": 
-             {
-                var me = _xmppClient.CurrentParty.Members.FirstOrDefault(x => x.Id == _authSession.AccountId);
-                if (content.Contains(":")) 
+                    // Otherwise, just set the outfit without a variant.
+                    await me.SetOutfit(_xmppClient, content);
+                    break;
+                }
+                case "banner": 
                 {
-                   await me.SetPickaxe(_xmppClient, content.Split(":")[0], content.Split(":")[1]);
-                   break;
+                    // Set the client's banner to the content variables. Example: "!banner BRSeason01:DefaultColor02" would set the client's banner icon to the Battle Bus banner, and the client's banner color to red.
+                    await me.SetBanner(_xmppClient, content.Split(":")[0], content.Split(":")[1]);
+                    break;
                 }
-    
-                await me.SetPickaxe(_xmppClient, content);
-                break;
-             }
-             case "banner": 
-             {
-                var me = _xmppClient.CurrentParty.Members.FirstOrDefault(x => x.Id == _authSession.AccountId);
-                await me.SetBanner(_xmppClient, content.Split(":")[0], content.Split(":")[1]);
-                break;
-             }
-             case "emoji": 
-             {
-                var me = _xmppClient.CurrentParty.Members.FirstOrDefault(x => x.Id == _authSession.AccountId);
-                await me.SetEmoji(_xmppClient, content);
-                break;
-             }
-             case "level": 
-             {
-                var me = _xmppClient.CurrentParty.Members.FirstOrDefault(x => x.Id == _authSession.AccountId);
-                await me.SetLevel(_xmppClient, Convert.ToInt32(content));
-                break;
-             }
-         }
-      };
+            }
+        };
 
-      _xmppClient.Initialize().GetAwaiter().GetResult();
-   }
+        // Initialize the XMPP client. This method connects us to Epic Games' XMPP services and starts listening for messages.
+        _xmppClient.Initialize().GetAwaiter().GetResult();
+    }
 }
 ```
 
