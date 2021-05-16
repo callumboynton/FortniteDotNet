@@ -2,6 +2,11 @@
 	<!--<img align="center" src="https://cdn.discordapp.com/attachments/838613584970776608/839187334515130408/neonitev2.png" alt="Logo" width="216" height="127">-->
 </p>
 <p align="center">FortniteDotNet is a simple and easy-to-use library used for interacting with Fortnite's HTTP and XMPP services. Features include interactions with parties and friends, general API data, and more.</p>
+<p align="center">
+    <img alt="Stars" src="https://img.shields.io/github/stars/DarkbladeEU/FortniteDotNet">
+    <img alt="Issues" src="https://img.shields.io/github/issues/DarkbladeEU/FortniteDotNet">
+    <img alt="License" src="https://img.shields.io/github/license/DarkbladeEU/FortniteDotNet">
+</p>
 
 ## Example
 The below code demonstrates how you could use the XMPP feature of FortniteDotNet to create a lobby bot that updates the client upon commands sent in party chat.
@@ -115,8 +120,6 @@ internal class Program
 	}
 }
 ```
-
-
 
 ## Contact
 For any queries regarding FortniteDotNet, you can reach out to me on the following platforms:
