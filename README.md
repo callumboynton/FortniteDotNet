@@ -22,7 +22,8 @@ internal class Program
    private static void Main() 
    {
       _api = new FortniteApi();
-      Task.Run(async () => {
+      Task.Run(async () => 
+      {
          _authSession = await _api.AccountService.GenerateOAuthSession(GrantType.DeviceAuth, AuthClient.iOS, new() 
 	 {
             {"device_id", ""}, 
