@@ -6,6 +6,9 @@ namespace FortniteDotNet.Models.XMPP
 {
     public partial class XMPPClient
     {
+        /// <summary>
+        /// The open message that's sent when connecting to Epic Games' XMPP services.
+        /// </summary>
         public async Task SendOpen()
         {
             var builder = new StringBuilder();

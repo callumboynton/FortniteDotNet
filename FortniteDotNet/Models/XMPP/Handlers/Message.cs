@@ -147,7 +147,7 @@ namespace FortniteDotNet.Models.XMPP
                         CurrentParty.Members.Add(member);
                     }
 
-                    await CurrentParty.PatchPresence(this);
+                    await CurrentParty.UpdatePresence(this);
                     
                     var me = CurrentParty.Members.FirstOrDefault(x => x.Id == AuthSession.AccountId);
                     if (me.IsLeader)
@@ -168,7 +168,7 @@ namespace FortniteDotNet.Models.XMPP
                     var revision = (int)body.revision;
 
                     CurrentParty.UpdateParty(revision, config, updated, deleted);
-                    await CurrentParty.PatchPresence(this);
+                    await CurrentParty.UpdatePresence(this);
                     
                     onPartyUpdated(new(CurrentParty, updated, deleted));
                     
@@ -208,7 +208,7 @@ namespace FortniteDotNet.Models.XMPP
                         return;
 
                     CurrentParty.Members.Remove(member);
-                    await CurrentParty.PatchPresence(this);
+                    await CurrentParty.UpdatePresence(this);
 
                     var me = CurrentParty.Members.FirstOrDefault(x => x.Id == AuthSession.AccountId);
                     if (me.IsLeader)
@@ -232,7 +232,7 @@ namespace FortniteDotNet.Models.XMPP
                         return;
 
                     CurrentParty.Members.Remove(member);
-                    await CurrentParty.PatchPresence(this);
+                    await CurrentParty.UpdatePresence(this);
 
                     var me = CurrentParty.Members.FirstOrDefault(x => x.Id == AuthSession.AccountId);
                     if (me.IsLeader)
@@ -262,7 +262,7 @@ namespace FortniteDotNet.Models.XMPP
                             return;
                         
                         CurrentParty.Members.Remove(member);
-                        await CurrentParty.PatchPresence(this);
+                        await CurrentParty.UpdatePresence(this);
 
                         var me = CurrentParty.Members.FirstOrDefault(x => x.Id == AuthSession.AccountId);
                         if (me.IsLeader)
@@ -286,7 +286,7 @@ namespace FortniteDotNet.Models.XMPP
                         return;
 
                     CurrentParty.Members.Remove(member);
-                    await CurrentParty.PatchPresence(this);
+                    await CurrentParty.UpdatePresence(this);
 
                     var me = CurrentParty.Members.FirstOrDefault(x => x.Id == AuthSession.AccountId);
                     if (me.IsLeader)
@@ -308,7 +308,7 @@ namespace FortniteDotNet.Models.XMPP
                         return;
 
                     member.Role = "CAPTAIN";
-                    await CurrentParty.PatchPresence(this);
+                    await CurrentParty.UpdatePresence(this);
                     
                     onPartyMemberPromoted(member);
                     

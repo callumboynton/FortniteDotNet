@@ -46,6 +46,11 @@ namespace FortniteDotNet.Models.Party
         [JsonIgnore] 
         public PartyMember Leader => Members.FirstOrDefault(x => x.Role == "CAPTAIN");
         
+        /// <summary>
+        /// This updates the parties privacy.
+        /// </summary>
+        /// <param name="oAuthSession">The <see cref="OAuthSession"/> to use for authentication.</param>
+        /// <param name="partyPrivacy">The desired privacy of the party.</param>
         public async Task UpdatePrivacy(OAuthSession oAuthSession, PartyPrivacy partyPrivacy)
         {
             Dictionary<string, object> updated = new();
@@ -88,38 +93,48 @@ namespace FortniteDotNet.Models.Party
             await PartyService.UpdateParty(oAuthSession, this, updated, deleted);
         }
 
+        /// <summary>
+        /// This updates the parties squad assignments, mainly used when a member joins or leaves.
+        /// </summary>
+        /// <param name="oAuthSession">The <see cref="OAuthSession"/> to use for authentication.</param>
         public async Task UpdateSquadAssignments(OAuthSession oAuthSession)
         {
-            var assignments = new List<SquadAssignment>();
+            // Initialise our variables
+            var assignments = new List<RawSquadAssignment>();
             var index = 0;
             
+            // Add the current account to the list of assignments
             assignments.Add(new(oAuthSession.AccountId));
 
+            // For each member in the party...
             foreach (var member in Members)
             {
+                // If the member is our XMPP client, continue enumerating through the party's members.
                 if (member.Id == oAuthSession.AccountId) 
                     continue;
                 
+                // Increment our index and add the member to the list of assignments.
                 index++;
                 assignments.Add(new(member.Id, index));
             }
+            
+            // Update/set our meta to the list of assignments.
+            Meta["Default:RawSquadAssignments_j"] = new RawSquadAssignments(assignments).ToString();
 
-            Meta["Default:RawSquadAssignments_j"] = JsonConvert.SerializeObject(new
-            {
-                RawSquadAssignments = assignments
-            });
-
+            // Update the party with the new squad assignments.
             await PartyService.UpdateParty(oAuthSession, this, new()
             {
-                { 
-                    "Default:RawSquadAssignments_j", JsonConvert.SerializeObject(new
-                    {
-                        RawSquadAssignments = assignments
-                    })
-                }
+                {"Default:RawSquadAssignments_j", Meta["Default:RawSquadAssignments_j"]}
             });
         }
         
+        /// <summary>
+        /// Updates the party's properties.
+        /// </summary>
+        /// <param name="revision">The current revision the party is on.</param>
+        /// <param name="config">The current config for the party.</param>
+        /// <param name="updated">The updated party meta.</param>
+        /// <param name="deleted">The deleted party meta.</param>
         public void UpdateParty(int revision, Dictionary<string, object> config, Dictionary<string, object> updated = null, IEnumerable<string> deleted = null)
         {
             if (revision > Revision)
@@ -129,7 +144,7 @@ namespace FortniteDotNet.Models.Party
                 Meta.Remove(deletedMeta);
             foreach (var updatedMeta in updated)
                 Meta[updatedMeta.Key] = updatedMeta.Value.ToString();
-
+            
             Config["joinability"] = config["party_privacy_type"];
             Config["maxSize"] = config["max_number_of_members"];
             Config["subType"] = config["party_sub_type"];
@@ -137,11 +152,16 @@ namespace FortniteDotNet.Models.Party
             Config["inviteTtl"] = config["invite_ttl_seconds"];
         }
 
-        public async Task PatchPresence(XMPPClient xmppClient)
+        /// <summary>
+        /// This updates the presence for the provided <see cref="XMPPClient"/> based on the current party's privacy.
+        /// </summary>
+        /// <param name="xmppClient">The <see cref="XMPPClient"/> to update the presence for.</param>
+        public async Task UpdatePresence(XMPPClient xmppClient)
         {
             object partyJoinInfo;
             var presencePermission = Meta["urn:epic:cfg:presence-perm_s"];
 
+            // If the party is private, don't send over the party join info.
             if (presencePermission == "Noone" || presencePermission == "Leader" && Leader.Id != xmppClient.AuthSession.AccountId)
             {
                 partyJoinInfo = new
@@ -149,6 +169,7 @@ namespace FortniteDotNet.Models.Party
                     bIsPrivate = true
                 };
             }
+            // Otherwise, send over the party join info.
             else
             {
                 partyJoinInfo = new XMPP.Meta.PartyJoinInfo(

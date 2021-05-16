@@ -1,4 +1,4 @@
-﻿namespace FortniteDotNet
+﻿namespace FortniteDotNet.Util
 {
     internal struct Endpoints
     {

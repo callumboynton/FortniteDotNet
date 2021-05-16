@@ -24,6 +24,9 @@ namespace FortniteDotNet.Models.XMPP.Payloads
         [JsonProperty("Properties")]
         public Dictionary<string, object> Properties { get; set; }
 
+        /// <summary>
+        /// The default presence when not in a party.
+        /// </summary>
         public Presence()
         {
             Status = "";
@@ -34,6 +37,11 @@ namespace FortniteDotNet.Models.XMPP.Payloads
             Properties = new();
         }
 
+        /// <summary>
+        /// The default presence when in a party.
+        /// </summary>
+        /// <param name="partyInfo">The party info.</param>
+        /// <param name="properties">The properties.</param>
         public Presence(PartyInfo partyInfo, Dictionary<string, object> properties)
         {
             Status = $"Battle Royale Lobby - {partyInfo.Members.Count} / {partyInfo.Config["max_size"]}";

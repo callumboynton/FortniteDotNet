@@ -14,6 +14,12 @@ namespace FortniteDotNet.Services
 {
     public class PartyService
     {
+        /// <summary>
+        /// Gets the party information of the party bound to the provided party ID.
+        /// </summary>
+        /// <param name="oAuthSession">The <see cref="OAuthSession"/> to use for authentication.</param>
+        /// <param name="partyId">The party ID of the desired party.</param>
+        /// <returns>The party information of the party bound to the provided party ID.</returns>
         internal static async Task<PartyInfo> GetParty(OAuthSession oAuthSession, string partyId)
         {
             // We're using a using statement so that the initialised client is disposed of when the code block is exited.
@@ -30,6 +36,11 @@ namespace FortniteDotNet.Services
             return await client.GetDataAsync<PartyInfo>(Endpoints.Party.QueryParty(partyId)).ConfigureAwait(false);
         }
         
+        /// <summary>
+        /// Gets the summary of the account bound to the provided <see cref="OAuthSession"/>.
+        /// </summary>
+        /// <param name="oAuthSession">The <see cref="OAuthSession"/> to use for authentication.</param>
+        /// <returns>The <see cref="PartySummary"/> of the account bound to the provided <see cref="OAuthSession"/>.</returns>
         internal static async Task<PartySummary> GetSummary(OAuthSession oAuthSession)
         {
             // We're using a using statement so that the initialised client is disposed of when the code block is exited.
@@ -46,18 +57,29 @@ namespace FortniteDotNet.Services
             return await client.GetDataAsync<PartySummary>(Endpoints.Party.Summary(oAuthSession.AccountId)).ConfigureAwait(false);
         }
 
-        internal static async Task InitParty(XMPPClient xmppClient, bool create = true)
+        /// <summary>
+        /// Initialises a new party for the provided <see cref="XMPPClient"/>.
+        /// </summary>
+        /// <param name="xmppClient">The <see cref="XMPPClient"/> to use.</param>
+        internal static async Task InitParty(XMPPClient xmppClient)
         {
+            // Get the party summary of the account bound to the provided XMPP client, and update its current party.
             var summary = await GetSummary(xmppClient.AuthSession);
             xmppClient.CurrentParty = summary.Current.FirstOrDefault();
 
-            if (create && xmppClient.CurrentParty != null)
+            // If the current party is not null, leave the party.
+            if (xmppClient.CurrentParty != null)
                 await LeaveParty(xmppClient);
 
-            if (xmppClient.CurrentParty == null)
-                await CreateParty(xmppClient);
+            // Create the party.
+            await CreateParty(xmppClient);
         }
         
+        /// <summary>
+        /// Creates a party for the provided <see cref="XMPPClient"/>.
+        /// </summary>
+        /// <param name="xmppClient">The <see cref="XMPPClient"/> to create a party for.</param>
+        /// <returns>The <see cref="PartyInfo"/> of the created party.</returns>
         internal static async Task<PartyInfo> CreateParty(XMPPClient xmppClient)
         {
             // We're using a using statement so that the initialised client is disposed of when the code block is exited.
@@ -76,11 +98,18 @@ namespace FortniteDotNet.Services
             xmppClient.CurrentParty = await client.PostDataAsync<PartyInfo>(Endpoints.Party.Parties,
                 JsonConvert.SerializeObject(new PartyCreationInfo(xmppClient))).ConfigureAwait(false);
             
+            // Join the party chat.
             await xmppClient.JoinPartyChat();
             
+            // Return the current party.
             return xmppClient.CurrentParty;
         }
         
+        /// <summary>
+        /// Joins the party of the provided <see cref="PartyInvite"/>.
+        /// </summary>
+        /// <param name="xmppClient">The <see cref="XMPPClient"/> to join the party from.</param>
+        /// <param name="invite">The <see cref="PartyInvite"/> to accept.</param>
         internal static async Task JoinParty(XMPPClient xmppClient, PartyInvite invite)
         {
             // We're using a using statement so that the initialised client is disposed of when the code block is exited.
@@ -100,61 +129,30 @@ namespace FortniteDotNet.Services
             {
                 // Use our request helper to make a POST request.
                 var response = await client.PostDataAsync<PartyJoined>(Endpoints.Party.Join(invite.PartyId, xmppClient.AuthSession.AccountId),
-                    JsonConvert.SerializeObject(new PartyJoinInfo
-                    {
-                        Connection = new PartyMemberConnection
-                        {
-                            Id = $"{xmppClient.Jid}/{xmppClient.Resource}",
-                            Meta = new()
-                            {
-                                {"urn:epic:conn:platform_s", "WIN"},
-                                {"urn:epic:conn:type_s", "game"}
-                            },
-                            YieldLeadership = false
-                        },
-                        Meta = new()
-                        {
-                            {"urn:epic:member:dn_s", xmppClient.AuthSession.DisplayName},
-                            {
-                                "urn:epic:member:joinrequestusers_j", JsonConvert.SerializeObject(new PartyJoinRequest
-                                {
-                                    Users = new()
-                                    {
-                                        new JoinRequestUser
-                                        {
-                                            Id = xmppClient.AuthSession.AccountId,
-                                            DisplayName = xmppClient.AuthSession.DisplayName,
-                                            Platform = "WIN",
-                                            Data = new()
-                                            {
-                                                {"CrossplayReference", "1"},
-                                                {"SubGame_u", "1"}
-                                            }
-                                        }
-                                    }
-                                })
-                            }
-                        }
-                    })).ConfigureAwait(false);
+                    new PartyJoinInfo(xmppClient).ToString()).ConfigureAwait(false);
 
+                // Set the XMPP clients current party to the party we just joined, then join the party chat.
                 xmppClient.CurrentParty = await GetParty(xmppClient.AuthSession, response.PartyId);
                 await xmppClient.JoinPartyChat();
             }
             catch (EpicException ex)
             {
+                // If the error code DOESN'T indicate we're already in a party, throw the exception.
                 if (ex.ErrorCode != "errors.com.epicgames.social.party.user_has_party")
                 {
                     await InitParty(xmppClient);
                     throw;
                 }
                 
+                // Else, restart the process.
                 await InitParty(xmppClient);
                 goto start;
             }
         }
         
-        internal static async Task LeaveParty(XMPPClient xmppClient, bool createNew = false)
+        internal static async Task LeaveParty(XMPPClient xmppClient)
         {
+            // Leave the party chat.
             await xmppClient.LeavePartyChat();
             
             // We're using a using statement so that the initialised client is disposed of when the code block is exited.
@@ -174,18 +172,21 @@ namespace FortniteDotNet.Services
             }
             catch (EpicException ex)
             {
+                // If the error code DOESN'T indicate there was no party found, throw the exception.
                 if (ex.ErrorCode != "errors.com.epicgames.social.party.party_not_found")
                     throw;
-
-                await InitParty(xmppClient);
             }
             
-            xmppClient.CurrentParty = null;
-
-            if (createNew)
-                await CreateParty(xmppClient);
+            await InitParty(xmppClient);
         }
 
+        /// <summary>
+        /// Updates the party bound to the provided <see cref="PartyInfo"/>.
+        /// </summary>
+        /// <param name="oAuthSession">The <see cref="OAuthSession"/> to use for authentication.</param>
+        /// <param name="partyInfo">The <see cref="PartyInfo"/> of the party to update.</param>
+        /// <param name="updated">The updated party meta.</param>
+        /// <param name="deleted">The deleted party meta.</param>
         internal static async Task UpdateParty(OAuthSession oAuthSession, PartyInfo partyInfo, Dictionary<string, object> updated = null, List<string> deleted = null)
         {
             // We're using a using statement so that the initialised client is disposed of when the code block is exited.
@@ -205,35 +206,32 @@ namespace FortniteDotNet.Services
             {
                 // Use our request helper to make a POST request.
                 await client.PatchDataAsync(Endpoints.Party.QueryParty(partyInfo.Id),
-                    JsonConvert.SerializeObject(new PartyUpdate
-                    {
-                        Config = new()
-                        {
-                            {"join_confirmation", partyInfo.Config["join_confirmation"]},
-                            {"joinability", partyInfo.Config["joinability"]},
-                            {"max_size", partyInfo.Config["max_size"]}
-                        },
-                        Meta = new PartyUpdateMeta
-                        {
-                            Delete = deleted ?? new(),
-                            Update = updated
-                        },
-                        Revision = partyInfo.Revision
-                    })).ConfigureAwait(false);
+                    new PartyUpdate(partyInfo, updated, deleted).ToString()).ConfigureAwait(false);
 
+                // Increment the party revision and last updated time.
                 partyInfo.Revision++;
                 partyInfo.UpdatedAt = DateTime.Now;
             }
             catch (EpicException ex)
             {
+                // If the error code DOESN'T indicate the revision was stale, throw the exception.
                 if (ex.ErrorCode != "errors.com.epicgames.social.party.stale_revision")
                     throw;
                 
+                // Update the revision to the one from the exception, then restart the process.
                 partyInfo.Revision = Convert.ToInt32(ex.MessageVars[1]);
                 goto start;
             }
         }
 
+        /// <summary>
+        /// Updates the party member bound to the provided <see cref="PartyMember"/>.
+        /// </summary>
+        /// <param name="oAuthSession">The <see cref="OAuthSession"/> to use for authentication.</param>
+        /// <param name="partyMember">The <see cref="PartyMember"/> to update.</param>
+        /// <param name="partyId">The party ID of the party the member is in.</param>
+        /// <param name="updated">The updated party meta.</param>
+        /// <param name="deleted">The deleted party meta.</param>
         internal static async Task UpdateMember(OAuthSession oAuthSession, PartyMember partyMember, string partyId, Dictionary<string, object> updated = null, List<string> deleted = null)
         {
             // We're using a using statement so that the initialised client is disposed of when the code block is exited.
@@ -253,26 +251,30 @@ namespace FortniteDotNet.Services
             {
                 // Use our request helper to make a POST request.
                 await client.PatchDataAsync(Endpoints.Party.MemberMeta(partyId, oAuthSession.AccountId),
-                    JsonConvert.SerializeObject(new PartyMemberUpdate
-                    {
-                        Delete = deleted ?? new(),
-                        Update = updated ?? PartyMember.SchemaMeta,
-                        Revision = partyMember.Revision
-                    })).ConfigureAwait(false);
+                    new PartyMemberUpdate(partyMember, updated, deleted).ToString()).ConfigureAwait(false);
 
+                // Increment the party revision and last updated time.
                 partyMember.Revision++;
                 partyMember.UpdatedAt = DateTime.Now;
             }
             catch (EpicException ex)
             {
+                // If the error code DOESN'T indicate the revision was stale, throw the exception.
                 if (ex.ErrorCode != "errors.com.epicgames.social.party.stale_revision")
                     throw;
                 
+                // Update the revision to the one from the exception, then restart the process.
                 partyMember.Revision = Convert.ToInt32(ex.MessageVars[1]);
                 goto start;
             }
         }
         
+        /// <summary>
+        /// Confirms a member for a party.
+        /// </summary>
+        /// <param name="oAuthSession">The <see cref="OAuthSession"/> to use for authentication.</param>
+        /// <param name="partyId">The party ID of the party that the member is in.</param>
+        /// <param name="memberId">The account ID of the member to confirm.</param>
         internal static async Task ConfirmMember(OAuthSession oAuthSession, string partyId, string memberId)
         {
             // We're using a using statement so that the initialised client is disposed of when the code block is exited.
@@ -289,6 +291,12 @@ namespace FortniteDotNet.Services
             await client.PostDataAsync(Endpoints.Party.ConfirmMember(partyId, memberId), "").ConfigureAwait(false);
         }
         
+        /// <summary>
+        /// Gets a list of <see cref="PartyInfo"/>s which indicates the client has pending invites.
+        /// </summary>
+        /// <param name="oAuthSession">The <see cref="OAuthSession"/> to use for authentication.</param>
+        /// <param name="pingerId">The account ID of the pinger.</param>
+        /// <returns></returns>
         internal static async Task<List<PartyInfo>> GetPartyPings(OAuthSession oAuthSession, string pingerId)
         {
             // We're using a using statement so that the initialised client is disposed of when the code block is exited.
@@ -305,6 +313,11 @@ namespace FortniteDotNet.Services
             return await client.GetDataAsync<List<PartyInfo>>(Endpoints.Party.PartyPings(oAuthSession.AccountId, pingerId)).ConfigureAwait(false);
         }
         
+        /// <summary>
+        /// Deletes a ping bound to the provided sender ID.
+        /// </summary>
+        /// <param name="oAuthSession">The <see cref="OAuthSession"/> to use for authentication.</param>
+        /// <param name="senderId">The account ID of the ping sender.</param>
         internal static async Task DeletePingById(OAuthSession oAuthSession, string senderId)
         {
             // We're using a using statement so that the initialised client is disposed of when the code block is exited.
@@ -321,6 +334,11 @@ namespace FortniteDotNet.Services
             await client.DeleteDataAsync(Endpoints.Party.UserPings(oAuthSession.AccountId, senderId)).ConfigureAwait(false);
         }
 
+        /// <summary>
+        /// Sends an invite from the provided <see cref="XMPPClient"/> to the account bound to the provided account ID.
+        /// </summary>
+        /// <param name="xmppClient">The <see cref="XMPPClient"/> to send the invite from.</param>
+        /// <param name="accountId">The account ID of the account to send the invite to.</param>
         internal static async Task SendInvite(XMPPClient xmppClient, string accountId)
         {
             // We're using a using statement so that the initialised client is disposed of when the code block is exited.
@@ -340,7 +358,12 @@ namespace FortniteDotNet.Services
                 JsonConvert.SerializeObject(xmppClient.CurrentParty.Config)).ConfigureAwait(false);
         }
 
-        public async Task KickMember(XMPPClient xmppClient, PartyMember partyMember)
+        /// <summary>
+        /// Kicks a member from a party.
+        /// </summary>
+        /// <param name="xmppClient">The <see cref="XMPPClient"/> to kick the member from.</param>
+        /// <param name="partyMember">The <see cref="PartyMember"/> to kick.</param>
+        internal static async Task KickMember(XMPPClient xmppClient, PartyMember partyMember)
         {
             // We're using a using statement so that the initialised client is disposed of when the code block is exited.
             using var client = new WebClient
@@ -356,7 +379,12 @@ namespace FortniteDotNet.Services
             await client.DeleteDataAsync(Endpoints.Party.Member(xmppClient.CurrentParty.Id, partyMember.Id)).ConfigureAwait(false);
         }
 
-        public async Task PromoteMember(XMPPClient xmppClient, PartyMember partyMember)
+        /// <summary>
+        /// Promotes a member in a party.
+        /// </summary>
+        /// <param name="xmppClient">The <see cref="XMPPClient"/> to promote the member from.</param>
+        /// <param name="partyMember">The <see cref="PartyMember"/> to promote.</param>
+        internal static async Task PromoteMember(XMPPClient xmppClient, PartyMember partyMember)
         {
             // We're using a using statement so that the initialised client is disposed of when the code block is exited.
             using var client = new WebClient

@@ -6,6 +6,10 @@ namespace FortniteDotNet.Models.XMPP
 {
     public partial class XMPPClient
     {
+        /// <summary>
+        /// Sends the IQ.
+        /// </summary>
+        /// <param name="id">The IQ ID.</param>
         public async Task SendIq(string id)
         {
             var builder = new StringBuilder();

@@ -4,7 +4,7 @@
     {
         POST,
         PUT,
-        DELETE,
-        PATCH
+        PATCH,
+        DELETE
     }
 }

@@ -10,6 +10,13 @@ namespace FortniteDotNet.Util
 {
     internal class CosmeticHelper
     {
+        /// <summary>
+        /// Gets a cosmetic from Fortnite-API using the provided name and type.
+        /// </summary>
+        /// <param name="name">The name of the desired cosmetic to retrieve.</param>
+        /// <param name="type">The type of the desired cosmetic to retrieve.</param>
+        /// <returns>The cosmetic bound to the provided name and type.</returns>
+        /// <exception cref="Exception">Thrown if the web request fails.</exception>
         internal static async Task<Cosmetic> GetCosmeticByName(string name, string type)
         {
             var query = HttpUtility.ParseQueryString(string.Empty);

@@ -11,6 +11,10 @@ namespace FortniteDotNet.Models.Party
         public string InvitePermission { get; set; }
         public bool AcceptingMembers { get; set; }
 
+        /// <summary>
+        /// Gets some properties for a specific party privacy.
+        /// </summary>
+        /// <param name="privacy">The desired party privacy.</param>
         public PartyPrivacy(Privacy privacy)
         {
             switch (privacy)

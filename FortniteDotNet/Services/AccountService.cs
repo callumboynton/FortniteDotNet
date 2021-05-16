@@ -297,33 +297,6 @@ namespace FortniteDotNet.Services
             // Use our request helper to make a GET request, and return the response data deserialized into the appropriate type.
             return await client.GetDataAsync<ExternalAuth>(Endpoints.Accounts.ExternalAuth(oAuthSession.AccountId, type)).ConfigureAwait(false);
         }
-
-        /*
-            /// <summary>
-            /// Adds an external auth to an account bound to the provided <see cref="OAuthSession"/>.
-            /// </summary>
-            /// <param name="oAuthSession">The <see cref="OAuthSession"/> to use for authentication.</param>
-            /// <param name="payload">The payload for the request.</param>
-            /// <returns>Unknown</returns>
-            internal static async Task<object> AddExternalAuth(OAuthSession oAuthSession, AddExternalAuth payload)
-            {
-                // We're using a using statement so that the initialised client is disposed of when the code block is exited.
-                using var client = new WebClient
-                {
-                    Headers =
-                    {
-                        // This is so Epic Games' API knows what kind of data we're providing.
-                        [HttpRequestHeader.ContentType] = "application/json",
-                        // Set the Authorization header to the access token from the provided OAuthSession.
-                        [HttpRequestHeader.Authorization] = $"bearer {oAuthSession.AccessToken}"
-                    }
-                };
-                
-                // Use our request helper to make a POST request, and return the response data deserialized into the appropriate type.
-                return await client.PostDataAsync<object>($"{BASE_URL}/api/public/account/{oAuthSession.AccountId}/externalAuths", 
-                    JsonConvert.SerializeObject(payload)).ConfigureAwait(false);
-            }
-        */
         
         /// <summary>
         /// Deletes the external auth bound to the provided type.

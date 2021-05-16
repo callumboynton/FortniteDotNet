@@ -197,7 +197,7 @@ namespace FortniteDotNet.Models.Accounts
         #region FriendsService
         
         /// <inheritdoc cref="FriendsService.GetSummary"/>
-        public async Task<Summary> GetSummary()
+        public async Task<Summary> GetFriendsSummary()
             => await FriendsService.GetSummary(this);
 
         /// <inheritdoc cref="FriendsService.GetAcceptedFriends"/>
@@ -260,21 +260,21 @@ namespace FortniteDotNet.Models.Accounts
         
         #region PartyService
 
-        /// <inheritdoc cref="PartyService.CreateParty"/>
-        public async Task<PartyInfo> CreateParty(XMPPClient xmppClient)
-            => await PartyService.CreateParty(xmppClient);
-
         /// <inheritdoc cref="PartyService.InitParty"/>
         public async Task InitParty(XMPPClient xmppClient)
             => await PartyService.InitParty(xmppClient);
         
-        /// <inheritdoc cref="PartyService.GetPartyPings"/>
-        public async Task<List<PartyInfo>> GetPartyPings(string pingerId)
-            => await PartyService.GetPartyPings(this, pingerId);
-        
         /// <inheritdoc cref="PartyService.GetParty"/>
         public async Task<PartyInfo> GetParty(string partyId)
             => await PartyService.GetParty(this, partyId);
+        
+        /// <inheritdoc cref="PartyService.GetSummary"/>
+        public async Task<PartySummary> GetPartySummary()
+            => await PartyService.GetSummary(this);
+        
+        /// <inheritdoc cref="PartyService.GetPartyPings"/>
+        public async Task<List<PartyInfo>> GetPartyPings(string pingerId)
+            => await PartyService.GetPartyPings(this, pingerId);
         
         #endregion
         

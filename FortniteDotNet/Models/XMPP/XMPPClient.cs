@@ -31,6 +31,10 @@ namespace FortniteDotNet.Models.XMPP
             Async = true
         };
 
+        /// <summary>
+        /// Initialises the properties with the provided <see cref="OAuthSession"/>.
+        /// </summary>
+        /// <param name="oAuthSession">The <see cref="OAuthSession"/> to use for authentication.</param>
         public XMPPClient(OAuthSession oAuthSession)
         {
             AuthSession = oAuthSession;
@@ -50,6 +54,9 @@ namespace FortniteDotNet.Models.XMPP
             KickedPartyIds = new();
         }
         
+        /// <summary>
+        /// Connects to Epic Games' XMPP services.
+        /// </summary>
         public async Task Initialize()
         {
             await XmppClient.ConnectAsync(new Uri("wss://xmpp-service-prod.ol.epicgames.com//"), CancellationToken.None);
@@ -57,12 +64,17 @@ namespace FortniteDotNet.Models.XMPP
             await HandleMessages();
         }
         
+        /// <summary>
+        /// Handles the incoming messages.
+        /// </summary>
         public async Task HandleMessages()
         {
             var memoryStream = new MemoryStream();
 
+            // We only care about messages whilst the websocket connection is open.
             while (XmppClient.State == WebSocketState.Open)
             {
+                // Create a buffer and receive messages whilst we haven't reached the end of the message.
                 WebSocketReceiveResult result;
                 do
                 {
@@ -73,13 +85,16 @@ namespace FortniteDotNet.Models.XMPP
 
                 switch (result.MessageType)
                 {
+                    // If the message type is close, dispose of the client.
                     case WebSocketMessageType.Close:
                         await DisposeAsync();
                         break;
                     case WebSocketMessageType.Text:
                     {
+                        // Get the message as a string.
                         var message = Encoding.UTF8.GetString(memoryStream.ToArray());
                 
+                        // Load the message as an XML document.
                         var document = new XmlDocument();
                         try { document.LoadXml(message.Trim()); }
                         catch { return; }
@@ -113,12 +128,15 @@ namespace FortniteDotNet.Models.XMPP
                     }
                 }
 
-                memoryStream.Seek(0, SeekOrigin.Begin);
-                memoryStream.Position = 0;
-                memoryStream.SetLength(0);
+                // Re-initialise our memory stream.
+                memoryStream = new MemoryStream();
             }
         }
 
+        /// <summary>
+        /// Sends a message from the client.
+        /// </summary>
+        /// <param name="data">The data to send.</param>
         public async Task SendAsync(string data)
             => await XmppClient.SendAsync(new(Encoding.UTF8.GetBytes(data)), WebSocketMessageType.Text, true, CancellationToken.None);        
 
@@ -224,6 +242,9 @@ namespace FortniteDotNet.Models.XMPP
         
         #endregion
 
+        /// <summary>
+        /// Disposes of the client.
+        /// </summary>
         public async ValueTask DisposeAsync()
         {
             await XmppClient.CloseAsync(WebSocketCloseStatus.NormalClosure, "unavailable", CancellationToken.None);

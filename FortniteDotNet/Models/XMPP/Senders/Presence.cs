@@ -9,6 +9,10 @@ namespace FortniteDotNet.Models.XMPP
 {
     public partial class XMPPClient
     {
+        /// <summary>
+        /// Sends a presence.
+        /// </summary>
+        /// <param name="presence">The presence to send.</param>
         public async Task SendPresence(Presence presence)
         {
             LastPresence = presence;
@@ -33,6 +37,9 @@ namespace FortniteDotNet.Models.XMPP
             await SendAsync(builder.ToString()).ConfigureAwait(false);
         }
 
+        /// <summary>
+        /// Joins the chat of the clients current party.
+        /// </summary>
         public async Task JoinPartyChat()
         {
             var builder = new StringBuilder();
@@ -55,6 +62,9 @@ namespace FortniteDotNet.Models.XMPP
             await SendAsync(builder.ToString()).ConfigureAwait(false);
         }
         
+        /// <summary>
+        /// Leaves the chat of the clients current party.
+        /// </summary>
         public async Task LeavePartyChat()
         {
             var builder = new StringBuilder();

@@ -7,6 +7,9 @@ namespace FortniteDotNet.Models.XMPP
 {
     public partial class XMPPClient
     {
+        /// <summary>
+        /// Sends the authentication for connecting to Epic Games' XMPP services.
+        /// </summary>
         public async Task SendAuth()
         {
             var auth = Convert.ToBase64String(Encoding.UTF8.GetBytes($"\u0000{AuthSession.AccountId}\u0000{AuthSession.AccessToken}"));

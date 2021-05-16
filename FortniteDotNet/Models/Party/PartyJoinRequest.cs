@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using System.Collections.Generic;
+using FortniteDotNet.Models.XMPP;
 
 namespace FortniteDotNet.Models.Party
 {
@@ -7,6 +8,31 @@ namespace FortniteDotNet.Models.Party
     {
         [JsonProperty("users")]
         public List<JoinRequestUser> Users { get; set; }
+
+        public override string ToString()
+            => JsonConvert.SerializeObject(this);
+
+        /// <summary>
+        /// The default party join request.
+        /// </summary>
+        /// <param name="xmppClient">The <see cref="XMPPClient"/> to use for the join request.</param>
+        public PartyJoinRequest(XMPPClient xmppClient)
+        {
+            Users = new()
+            {
+                new JoinRequestUser
+                {
+                    Id = xmppClient.AuthSession.AccountId,
+                    DisplayName = xmppClient.AuthSession.DisplayName,
+                    Platform = "WIN",
+                    Data = new()
+                    {
+                        {"CrossplayReference", "1"},
+                        {"SubGame_u", "1"}
+                    }
+                }
+            };
+        }
     }
 
     public class JoinRequestUser

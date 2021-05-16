@@ -7,6 +7,12 @@ namespace FortniteDotNet.Models.XMPP
 {
     public partial class XMPPClient
     {
+        /// <summary>
+        /// Sends a message to a desired user.
+        /// </summary>
+        /// <param name="body">The body of the message.</param>
+        /// <param name="to">The Jabber ID to send the message to.</param>
+        /// <param name="isGroupChat">Is the message a group chat?</param>
         public async Task SendMessage(string body, string to, bool isGroupChat = false)
         {
             var builder = new StringBuilder();
