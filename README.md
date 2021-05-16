@@ -15,6 +15,11 @@
 
 </div>
 
+## Installation
+```
+dotnet add package FortniteDotNet
+```
+
 ## Example
 The below code demonstrates how you could use the XMPP feature of FortniteDotNet to create a lobby bot that updates the client upon commands sent in party chat.
 I've commented the example code so you can have some sort of understanding of what it's doing. Please also note that this is just an example, and there's plenty more that you can do with FortniteDotNet, however I won't be going into full depths until I create documentation for it.
@@ -116,8 +121,8 @@ internal class Program
 }
 ```
 
-## Quick Note
-FortniteDotNet is finished in terms of what I wanted to do, however, there are a lot of MCP commands that are missing from the FortniteService. I don't plan to add these for a while, if at all, however you're more than welcome to create a pull request implementing these commands along with their payloads. The code structure is organised so should be easy to understand, however if you struggle, refer to contacting me below.
+## Contributions
+If you wish to contribute to FortniteDotNet, you can do so by cloning this repository, making your changes, and submitting a pull request. If I deem the pull request inappropriate, I will deny it. FortniteDotNet is not **entirely** finished, especially due to the lack of MCP commands, so contributions are appreciated. The code structure is organised so should be easy to understand, however if you struggle, refer to contacting me below.
 
 ## Contact
 For any queries regarding FortniteDotNet, you can reach out to me on the following platforms:
