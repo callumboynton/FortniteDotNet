@@ -1,5 +1,5 @@
 <p align="center">
-	<!--<img align="center" src="https://cdn.discordapp.com/attachments/838613584970776608/839187334515130408/neonitev2.png" alt="Logo" width="216" height="127">-->
+	<img align="center" src="https://i.ibb.co/3cwrNSJ/Fortnite-Dot-Net.png" alt="Background">
 </p>
 <p align="center">FortniteDotNet is a simple and easy-to-use library used for interacting with Fortnite's HTTP and XMPP services. Features include interactions with parties and friends, general API data, and more.</p>
 <p align="center">
