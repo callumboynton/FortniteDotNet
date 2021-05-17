@@ -33,29 +33,26 @@ internal class Program
     private static XMPPClient _xmppClient;
     private static OAuthSession _authSession;
 
-    private static void Main() 
+    private static async Task Main() 
     {
         _api = new FortniteApi();
-        Task.Run(async () => 
-        {
-            // Creates an OAuth session for the iOS client using the device_auth grant type.
-            _authSession = await _api.AccountService.GenerateOAuthSession(GrantType.DeviceAuth, AuthClient.iOS, new() 
-            {
-                {"device_id", ""}, 
-	        {"account_id", ""},
-	        {"secret", ""}
-            });
+	
+        // Creates an OAuth session for the iOS client using the device_auth grant type.
+	_authSession = await _api.AccountService.GenerateOAuthSession(GrantType.DeviceAuth, AuthClient.iOS, new() 
+	{
+	    {"device_id", ""}, 
+	    {"account_id", ""},
+	    {"secret", ""}
+	});
 
-            // Starts XMPP-related operations on a new thread.
-            new Thread(Xmpp).Start();
+	// Starts XMPP-related operations on a new thread.
+	new Thread(Xmpp).Start();
+	
+        // Creates a party for the XMPP client using the OAuth session we generated earlier.
+	await _authSession.InitParty(_xmppClient);
 
-            // Creates a party for the XMPP client using the OAuth session we generated earlier.
-            await _authSession.InitParty(_xmppClient);
-            
-            // Updates the XMPP client's current party privacy to public using the OAuth session we generated earlier.
-            await _xmppClient.CurrentParty.UpdatePrivacy(_authSession, new PartyPrivacy(Privacy.Public));
-
-        }).ConfigureAwait(false).GetAwaiter().GetResult();
+	// Updates the XMPP client's current party privacy to public using the OAuth session we generated earlier.
+	await _xmppClient.CurrentParty.UpdatePrivacy(_authSession, new PartyPrivacy(Privacy.Public));
     }
 
     private static void Xmpp() 
