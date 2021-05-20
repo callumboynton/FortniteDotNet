@@ -11,6 +11,7 @@
 [![GitHub Issues](https://img.shields.io/github/issues/DarkbladeEU/FortniteDotNet?logo=github)](https://github.com/DarkbladeEU/FortniteDotNet/issues)
 [![GitHub Forks](https://img.shields.io/github/forks/DarkbladeEU/FortniteDotNet?logo=github)](https://github.com/DarkbladeEU/FortniteDotNet/forks)
 [![GitHub Stars](https://img.shields.io/github/stars/DarkbladeEU/FortniteDotNet?logo=github)](https://github.com/DarkbladeEU/FortniteDotNet/stargazers)
+[![Project Lines](https://img.shields.io/tokei/lines/github/DarkbladeEU/FortniteDotNet?logo=github)](https://github.com/DarkbladeEU/FortniteDotNet/)
 [![GitHub License](https://img.shields.io/github/license/DarkbladeEU/FortniteDotNet)](https://github.com/DarkbladeEU/FortniteDotNet/blob/master/LICENSE)
 
 </div>
