@@ -4,7 +4,7 @@
         <TargetFrameworks>net5.0;net6.0;netcoreapp3.1</TargetFrameworks>
         <LangVersion>8</LangVersion>
         <PackageId>FortniteDotNet</PackageId>
-        <PackageVersion>2.0.2</PackageVersion>
+        <PackageVersion>2.0.3</PackageVersion>
         <Title>FortniteDotNet</Title>
         <Authors>cyclonefreeze</Authors>
         <Description>FortniteDotNet is a simple and easy-to-use library used for interacting with Fortnite's HTTP and XMPP services. Features include interactions with parties and friends, general API data, and more. You can find it on GitHub here.</Description>
@@ -15,8 +15,8 @@
         <PackageTags>fortnite</PackageTags>
         <Company>cyclonefreeze</Company>
         <Product>FortniteDotNet</Product>
-        <AssemblyVersion>2.0.2</AssemblyVersion>
-        <FileVersion>2.0.2</FileVersion>
+        <AssemblyVersion>2.0.3</AssemblyVersion>
+        <FileVersion>2.0.3</FileVersion>
         <NeutralLanguage>en</NeutralLanguage>
         <AssemblyName>FortniteDotNet</AssemblyName>
         <RootNamespace>FortniteDotNet</RootNamespace>
