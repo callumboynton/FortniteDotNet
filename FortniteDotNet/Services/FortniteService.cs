@@ -74,7 +74,7 @@ namespace FortniteDotNet.Services
     
     public class FortniteService : IFortniteService
     {
-        private readonly Uri _baseUri = new Uri("https://fortnite-public-service-prod11.ol.epicgames.com/fortnite/api");
+        private readonly Uri _baseUri = new Uri("https://fortnite-public-service-prod11.ol.epicgames.com/fortnite/api/");
         private readonly HttpClient _client = new HttpClient();
 
         public async Task<Inventory> GetBattleRoyaleInventory(AuthSession authSession)
@@ -105,7 +105,7 @@ namespace FortniteDotNet.Services
 
             _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", authSession.AccessToken);
 
-            var response = await _client.PostAsync(new Uri(_baseUri, $"game/v2/profile/{authSession.AccountId}/client/{command}?profileId={profile}&rvn={revision}"), payload.ToJson());
+            var response = await _client.PostAsync(new Uri(_baseUri, $"game/v2/profile/{authSession.AccountId}/client/{command}?profileId={profile.ToString().ToLower()}&rvn={revision}"), payload.ToJson());
             return await response.Handle<McpResponse>();
         }
 
@@ -126,7 +126,7 @@ namespace FortniteDotNet.Services
 
             _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", authSession.AccessToken);
 
-            var response = await _client.PostAsync(new Uri(_baseUri, $"game/v2/profile/{accountId}/public/{command}?profileId={profile}&rvn={revision}"), payload.ToJson());
+            var response = await _client.PostAsync(new Uri(_baseUri, $"game/v2/profile/{accountId}/public/{command}?profileId={profile.ToString().ToLower()}&rvn={revision}"), payload.ToJson());
             return await response.Handle<McpResponse>();
         }
         
