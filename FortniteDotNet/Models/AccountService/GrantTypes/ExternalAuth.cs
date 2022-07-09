@@ -26,6 +26,6 @@ namespace FortniteDotNet.Models.AccountService.GrantTypes
         }
 
         public override string ToString()
-            => $"{base.ToString()}&external_auth_type={AuthType}external_auth_token={AuthToken}";
+            => $"{base.ToString()}&external_auth_type={AuthType}&external_auth_token={AuthToken}";
     }
 }
