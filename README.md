@@ -1,4 +1,6 @@
-﻿<div align="center">
+# This project is currently not maintained, and severely outdated!
+ 
+ <div align="center">
 
   <p><img src="https://i.ibb.co/ydk7KVc/banner.png" alt="Banner"></p>
   <p>FortniteDotNet is a simple and easy-to-use library used for interacting with Fortnite's HTTP and XMPP services. Features include interactions with parties and friends, general API data, and more.</p>
